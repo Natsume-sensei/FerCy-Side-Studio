@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FerCy Side Studio v1.2 (HTML Only)</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111625;
+            --bg-tertiary: #0f131f;
+            --accent: #00f2ff;
+            --danger: #ff4757;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(17, 22, 37, 0.85);
+            --item-hover: rgba(255, 255, 255, 0.05);
+            --splash-bg: #05070a;
+        }
+
+        body.light-mode {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --accent: #2563eb;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --border: rgba(0, 0, 0, 0.1);
+            --glass: rgba(255, 255, 255, 0.9);
+            --item-hover: rgba(0, 0, 0, 0.05);
+            --splash-bg: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s ease, color 0.2s ease; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            height: 100vh;
+            height: 100dvh; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed; inset: 0; background-color: var(--splash-bg); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+        .splash-logo { font-size: 3rem; font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .splash-logo span { color: var(--accent); }
+        .loading-bar { width: 200px; height: 3px; background: rgba(128,128,128,0.2); border-radius: 2px; overflow: hidden; }
+        .loading-progress { width: 0%; height: 100%; background: var(--accent); animation: load 2s ease-in-out forwards; }
+        .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes pulse { 50% { opacity: 0.7; } }
+
+        /* --- HEADER --- */
+        header {
+            height: 55px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; background: var(--glass); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0; 
+            z-index: 100;
+        }
+        .logo { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: var(--accent); }
+        .controls { display: flex; gap: 10px; align-items: center; }
+
+        .btn {
+            background: transparent; border: 1px solid var(--border); color: var(--text-main);
+            width: 35px; height: 35px; border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn:hover { background: var(--item-hover); border-color: var(--accent); color: var(--accent); }
+        .btn-text { width: auto; padding: 0 15px; gap: 8px; font-weight: 500; }
+        .btn-run { background: var(--accent); color: var(--bg-primary); border: none; }
+        .btn-run:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent); opacity: 0.9; color: var(--bg-primary);}
+
+        /* --- WORKSPACE LAYOUT --- */
+        .workspace { 
+            display: flex; 
+            flex: 1; 
+            overflow: hidden; 
+            position: relative; 
+        }
+        
+        .sidebar {
+            width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 10px 15px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .file-list { list-style: none; padding: 5px; overflow-y: auto; flex: 1; }
+        .file-item {
+            padding: 8px 10px; display: flex; align-items: center; gap: 10px;
+            cursor: pointer; border-radius: 4px; font-size: 0.9rem; color: var(--text-dim);
+            margin-bottom: 2px;
+        }
+        .file-item:hover { background: var(--item-hover); color: var(--text-main); }
+        .file-item.active { background: rgba(0, 242, 255, 0.1); color: var(--accent); border-left: 2px solid var(--accent); }
+        body.light-mode .file-item.active { background: rgba(37, 99, 235, 0.1); }
+        
+        .file-icon { width: 15px; text-align: center; }
+        .file-actions { margin-left: auto; display: none; gap: 5px; }
+        .file-item:hover .file-actions { display: flex; }
+        .delete-btn { color: var(--danger); font-size: 0.8rem; padding: 2px; }
+        .delete-btn:hover { opacity: 0.7; }
+
+        .main-area { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-width: 0; 
+            overflow: hidden; 
+        }
+        
+        .editor-container { 
+            flex: 1; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        .CodeMirror { 
+            height: 100% !important; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 14px; 
+            background: transparent !important; 
+        }
+
+        /* Preview Area */
+        .preview-container {
+            width: 40%; border-left: 1px solid var(--border); display: flex; flex-direction: column;
+            background: #fff;
+            overflow: hidden; 
+        }
+        .preview-header {
+            padding: 8px 15px; background: var(--bg-tertiary); color: var(--text-dim);
+            font-size: 0.8rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        iframe { flex: 1; border: none; width: 100%; }
+        
+        /* Console Output (Hidden as requested features removed) */
+        .console-output { display: none !important; }
+
+        /* Footer */
+        footer {
+            height: 25px; background: var(--bg-secondary); border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
+            font-size: 0.75rem; color: var(--text-dim); z-index: 50;
+            flex-shrink: 0; 
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--bg-secondary); padding: 20px; border-radius: 8px; width: 300px;
+            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal h3 { margin-bottom: 15px; font-size: 1rem; }
+        .modal input {
+            width: 100%; padding: 8px; margin-bottom: 15px; background: var(--bg-primary);
+            border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; outline: none;
+        }
+        .modal input:focus { border-color: var(--accent); }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
+
+        @media (max-width: 768px) {
+            .workspace { flex-direction: column; }
+            .sidebar { width: 100%; height: 120px; border-right: none; border-bottom: 1px solid var(--border); }
+            .preview-container { width: 100%; height: 300px; border-left: none; border-top: 1px solid var(--border); }
+            .btn-text span { display: none; }
+            .btn-text { width: 35px; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-logo"><i class="fas fa-cube"></i> FerCy <span>Side Studio</span></div>
+        <div class="loading-bar"><div class="loading-progress"></div></div>
+    </div>
+
+    <div class="modal-overlay" id="file-modal">
+        <div class="modal">
+            <h3>Buat File Baru</h3>
+            <input type="text" id="new-filename" placeholder="contoh: halaman.html">
+            <div class="modal-btns">
+                <button class="btn" onclick="closeModal()">Batal</button>
+                <button class="btn btn-run" onclick="confirmNewFile()" style="width: auto; padding: 0 15px;">Buat</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <i class="fas fa-cube" style="color: var(--accent);"></i>
+            FerCy <span>Side Studio</span>
+        </div>
+        <div class="controls">
+            <button class="btn btn-text" id="add-file-btn" title="Tambah File Baru">
+                <i class="fas fa-plus"></i> <span>Baru</span>
+            </button>
+            <button class="btn btn-text" id="save-btn" title="Download File">
+                <i class="fas fa-download"></i> <span>Simpan</span>
+            </button>
+            <div style="width: 1px; height: 20px; background: var(--border); margin: 0 5px;"></div>
+            <button class="btn" id="theme-btn" title="Ganti Tema"><i class="fas fa-moon"></i></button>
+            <button class="btn btn-run btn-text" id="run-btn">
+                <i class="fas fa-play"></i> <span>RUN</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span>Explorer</span>
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <ul class="file-list" id="file-list-container">
+            </ul>
+        </aside>
+
+        <div class="main-area">
+            <div class="editor-container">
+                <textarea id="code-editor"></textarea>
+            </div>
+        </div>
+
+        <div class="preview-container">
+            <div class="preview-header">
+                <span id="output-label">Web Browser Preview</span>
+                <i class="fas fa-globe"></i>
+            </div>
+            <iframe id="web-preview"></iframe>
+        </div>
+    </div>
+
+    <footer>
+        <div class="left" id="status-bar">Siap</div>
+        <div class="right">FerCy Engine v2.0 (HTML Only)</div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script>
+        // --- 1. SYSTEM STATE (Hanya HTML) ---
+        let files = [
+            { 
+                id: 1, 
+                name: 'index.html', 
+                lang: 'htmlmixed', 
+                content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { \n      background: #111; \n      color: white; \n      font-family: sans-serif; \n      text-align: center; \n      padding-top: 50px;\n    }\n    h1 { color: #00f2ff; }\n  </style>\n</head>\n<body>\n  <h1 id="title">Hello FerCy HTML</h1>\n  <p>Fitur Python, JS & CSS eksternal telah dihapus.</p>\n  \n  <script>\n    console.log("Internal script works!");\n  <\/script>\n</body>\n</html>' 
+            }
+        ];
+        
+        let activeFileId = 1;
+
+        // --- 2. INITIALIZATION ---
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            lineNumbers: true,
+            theme: 'dracula',
+            mode: 'htmlmixed',
+            autoCloseTags: true,
+            autoCloseBrackets: true
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => { document.getElementById('splash-screen').classList.add('splash-hidden'); }, 2000);
+            renderFileList();
+            switchFile(1);
+        });
+
+        // --- 3. FILE MANAGEMENT LOGIC ---
+        function renderFileList() {
+            const container = document.getElementById('file-list-container');
+            container.innerHTML = '';
+
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
+                li.onclick = () => switchFile(file.id);
+
+                // Default Icon for HTML
+                let iconClass = 'fa-html5';
+                
+                li.innerHTML = `
+                    <div class="file-icon"><i class="fab ${iconClass}"></i></div>
+                    <span>${file.name}</span>
+                    <div class="file-actions">
+                        <i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})" title="Hapus"></i>
+                    </div>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        function switchFile(id) {
+            const currentFile = files.find(f => f.id === activeFileId);
+            if(currentFile) currentFile.content = editor.getValue();
+
+            activeFileId = id;
+            const nextFile = files.find(f => f.id === activeFileId);
+            
+            if(nextFile) {
+                editor.setValue(nextFile.content);
+                editor.setOption('mode', nextFile.lang);
+                document.getElementById('status-bar').innerText = `Editing: ${nextFile.name}`;
+            }
+            renderFileList();
+        }
+
+        // --- NEW FILE FEATURE (Simplified) ---
+        const modal = document.getElementById('file-modal');
+        const addBtn = document.getElementById('add-file-btn');
+        const filenameInput = document.getElementById('new-filename');
+
+        addBtn.onclick = () => { modal.style.display = 'flex'; filenameInput.focus(); }
+        function closeModal() { modal.style.display = 'none'; filenameInput.value = ''; }
+
+        function confirmNewFile() {
+            const name = filenameInput.value.trim();
+            if(!name) return alert("Nama file tidak boleh kosong!");
+            
+            // Default semua file baru dianggap HTML/Text biasa
+            let lang = 'htmlmixed';
+
+            const newFile = {
+                id: Date.now(),
+                name: name,
+                lang: lang,
+                content: '<!DOCTYPE html>\n<html>\n<body>\n  <h1>New File</h1>\n</body>\n</html>'
+            };
+
+            files.push(newFile);
+            closeModal();
+            switchFile(newFile.id);
+        }
+
+        // --- DELETE FILE FEATURE ---
+        window.deleteFile = function(e, id) {
+            e.stopPropagation(); 
+            if(files.length <= 1) return alert("Tidak bisa menghapus satu-satunya file!");
+            
+            if(confirm('Yakin hapus file ini?')) {
+                files = files.filter(f => f.id !== id);
+                if(activeFileId === id) switchFile(files[0].id);
+                else renderFileList();
+            }
+        }
+
+        // --- SAVE/DOWNLOAD FEATURE ---
+        document.getElementById('save-btn').onclick = () => {
+            const currentFile = files.find(f => f.id === activeFileId);
+            currentFile.content = editor.getValue();
+
+            const blob = new Blob([currentFile.content], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = currentFile.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            const btn = document.getElementById('save-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-check"></i> <span>Tersimpan</span>`;
+            setTimeout(() => btn.innerHTML = originalHTML, 2000);
+        };
+
+        // --- RUN ENGINE LOGIC (WEB ONLY) ---
+        document.getElementById('run-btn').onclick = () => {
+            // Save current state first
+            const activeFile = files.find(f => f.id === activeFileId);
+            activeFile.content = editor.getValue();
+
+            const webPreview = document.getElementById('web-preview');
+            
+            // WEB MODE ONLY
+            webPreview.style.display = 'block';
+            
+            const doc = webPreview.contentWindow.document;
+            doc.open();
+            doc.write(activeFile.content);
+            doc.close();
+        };
+
+        // --- THEME LOGIC ---
+        let isDarkMode = true;
+        document.getElementById('theme-btn').onclick = () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('light-mode');
+            editor.setOption('theme', isDarkMode ? 'dracula' : 'eclipse');
+            document.getElementById('theme-btn').innerHTML = isDarkMode ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        };
+
+        window.addEventListener('resize', () => editor.refresh());
+    </script>
+</body>
+</html>
