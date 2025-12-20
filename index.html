@@ -3,13 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FerCy Side Studio v1.2 (HTML Only)</title>
+    <title>FerCy Side Studio</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.css">
+    
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-html.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-postcss.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <script src="https://emmet.io/js/emmet.js"></script>
 
     <style>
         :root {
@@ -18,12 +32,15 @@
             --bg-tertiary: #0f131f;
             --accent: #00f2ff;
             --danger: #ff4757;
+            --success: #2ecc71;
+            --warning: #f1c40f;
             --text-main: #e0e6ed;
             --text-dim: #94a3b8;
             --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(17, 22, 37, 0.85);
+            --glass: rgba(17, 22, 37, 0.95);
             --item-hover: rgba(255, 255, 255, 0.05);
             --splash-bg: #05070a;
+            --tab-active-bg: #1d1f21;
         }
 
         body.light-mode {
@@ -34,9 +51,10 @@
             --text-main: #1e293b;
             --text-dim: #64748b;
             --border: rgba(0, 0, 0, 0.1);
-            --glass: rgba(255, 255, 255, 0.9);
+            --glass: rgba(255, 255, 255, 0.95);
             --item-hover: rgba(0, 0, 0, 0.05);
             --splash-bg: #ffffff;
+            --tab-active-bg: #ffffff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s ease, color 0.2s ease; }
@@ -50,11 +68,8 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-main);
-            height: 100vh;
             height: 100dvh; 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         /* --- SPLASH SCREEN --- */
@@ -73,12 +88,9 @@
 
         /* --- HEADER --- */
         header {
-            height: 55px;
-            display: flex; align-items: center; justify-content: space-between;
+            height: 55px; display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; background: var(--glass); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0; 
-            z-index: 100;
+            border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 100;
         }
         .logo { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
         .logo span { color: var(--accent); }
@@ -87,36 +99,37 @@
         .btn {
             background: transparent; border: 1px solid var(--border); color: var(--text-main);
             width: 35px; height: 35px; border-radius: 6px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; position: relative;
         }
         .btn:hover { background: var(--item-hover); border-color: var(--accent); color: var(--accent); }
         .btn-text { width: auto; padding: 0 15px; gap: 8px; font-weight: 500; }
         .btn-run { background: var(--accent); color: var(--bg-primary); border: none; }
         .btn-run:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent); opacity: 0.9; color: var(--bg-primary);}
+        
+        .recording-dot {
+            width: 10px; height: 10px; background: red; border-radius: 50%;
+            display: none; animation: blink-rec 1s infinite; margin-right: 5px;
+        }
+        @keyframes blink-rec { 50% { opacity: 0; } }
 
         /* --- WORKSPACE LAYOUT --- */
-        .workspace { 
-            display: flex; 
-            flex: 1; 
-            overflow: hidden; 
-            position: relative; 
-        }
+        .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
         
+        /* Sidebar */
         .sidebar {
             width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border);
             display: flex; flex-direction: column; flex-shrink: 0;
+            transition: transform 0.3s ease;
         }
         .sidebar-header {
             padding: 10px 15px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
             color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+            border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
         .file-list { list-style: none; padding: 5px; overflow-y: auto; flex: 1; }
         .file-item {
             padding: 8px 10px; display: flex; align-items: center; gap: 10px;
-            cursor: pointer; border-radius: 4px; font-size: 0.9rem; color: var(--text-dim);
-            margin-bottom: 2px;
+            cursor: pointer; border-radius: 4px; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 2px;
         }
         .file-item:hover { background: var(--item-hover); color: var(--text-main); }
         .file-item.active { background: rgba(0, 242, 255, 0.1); color: var(--accent); border-left: 2px solid var(--accent); }
@@ -126,51 +139,102 @@
         .file-actions { margin-left: auto; display: none; gap: 5px; }
         .file-item:hover .file-actions { display: flex; }
         .delete-btn { color: var(--danger); font-size: 0.8rem; padding: 2px; }
-        .delete-btn:hover { opacity: 0.7; }
 
-        .main-area { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            min-width: 0; 
-            overflow: hidden; 
-        }
+        /* --- MAIN AREA (Tabs + Editor) --- */
+        .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
         
-        .editor-container { 
-            flex: 1; 
-            position: relative; 
-            overflow: hidden; 
+        /* TAB BAR */
+        .tab-bar {
+            height: 35px; background: var(--bg-primary); display: flex; align-items: flex-end;
+            padding-left: 0; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
         }
+        .tab {
+            height: 100%; padding: 0 15px; display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; color: var(--text-dim); border-right: 1px solid var(--border);
+            cursor: pointer; background: var(--bg-primary); position: relative; user-select: none;
+            min-width: 120px;
+        }
+        .tab.active { background: var(--tab-active-bg); color: var(--text-main); border-top: 2px solid var(--accent); }
+        .tab-close { margin-left: auto; font-size: 0.7rem; opacity: 0; border-radius: 50%; padding: 3px; }
+        .tab:hover .tab-close { opacity: 1; }
+        .tab-close:hover { background: var(--danger); color: white; }
+
+        /* EDITOR CONTAINER WITH MINIMAP */
+        .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; }
+        .editor-container { flex: 1; position: relative; overflow: hidden; }
         
-        .CodeMirror { 
-            height: 100% !important; 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 14px; 
-            background: transparent !important; 
+        /* MINIMAP (Saran No 3) */
+        .minimap-container {
+            width: 100px; background: var(--bg-primary); border-left: 1px solid var(--border);
+            position: relative; overflow: hidden; user-select: none; cursor: default;
+            flex-shrink: 0; display: none; /* Hidden on mobile */
+        }
+        @media (min-width: 768px) { .minimap-container { display: block; } }
+        
+        /* Sync styling for minimap content */
+        .minimap-content {
+            transform: scale(0.15); transform-origin: top left;
+            width: 666%; /* scale 0.15 means width needs to be 100/0.15 */
+            height: 100%; pointer-events: none;
         }
 
-        /* Preview Area */
+        .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: transparent !important; }
+        
+        /* CUSTOM DIALOG (Search Ctrl+F) - Saran No 2 */
+        .CodeMirror-dialog {
+            background: var(--bg-secondary) !important; color: var(--text-main) !important;
+            border-bottom: 1px solid var(--border); padding: 5px 10px !important;
+        }
+        .CodeMirror-dialog input {
+            background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-main);
+            outline: none; border-radius: 4px; padding: 2px 5px;
+        }
+
+        /* --- PREVIEW & CONSOLE AREA --- */
         .preview-container {
-            width: 40%; border-left: 1px solid var(--border); display: flex; flex-direction: column;
-            background: #fff;
-            overflow: hidden; 
+            width: 45%; border-left: 1px solid var(--border); display: flex; flex-direction: column;
+            background: #fff; overflow: hidden;
         }
         .preview-header {
             padding: 8px 15px; background: var(--bg-tertiary); color: var(--text-dim);
-            font-size: 0.8rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+            font-size: 0.8rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
         iframe { flex: 1; border: none; width: 100%; }
         
-        /* Console Output (Hidden as requested features removed) */
-        .console-output { display: none !important; }
+        /* CONSOLE EMULATOR */
+        .console-panel {
+            height: 150px; background: #111; border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+        }
+        .console-header {
+            padding: 5px 10px; background: #222; color: #fff; font-size: 0.75rem;
+            display: flex; justify-content: space-between; border-bottom: 1px solid #333;
+        }
+        .console-body { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.85rem; color: #eee; }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
+        .log-entry.error { color: #ff6b6b; }
+        .log-entry.warn { color: #feca57; }
+        .log-entry.log { color: #2ecc71; }
+        .log-time { color: #666; font-size: 0.7rem; margin-right: 8px; }
 
         /* Footer */
         footer {
             height: 25px; background: var(--bg-secondary); border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
-            font-size: 0.75rem; color: var(--text-dim); z-index: 50;
-            flex-shrink: 0; 
+            font-size: 0.75rem; color: var(--text-dim); z-index: 50; flex-shrink: 0;
+        }
+
+        /* ZEN MODE (Saran No 5) */
+        body.zen-mode header, body.zen-mode footer, body.zen-mode .sidebar, body.zen-mode .tab-bar, body.zen-mode .console-panel { display: none !important; }
+        body.zen-mode .workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
+        body.zen-mode .preview-container { width: 50%; }
+        body.zen-mode #exit-zen-btn { display: block; }
+        
+        #exit-zen-btn {
+            position: fixed; bottom: 20px; right: 20px; z-index: 10000;
+            background: var(--accent); color: var(--bg-primary); padding: 10px 20px;
+            border-radius: 30px; border: none; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 20px var(--accent); display: none;
         }
 
         /* Modal Styles */
@@ -179,37 +243,50 @@
             z-index: 1000; display: none; align-items: center; justify-content: center;
         }
         .modal {
-            background: var(--bg-secondary); padding: 20px; border-radius: 8px; width: 300px;
+            background: var(--bg-secondary); padding: 20px; border-radius: 8px; width: 350px;
             border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .modal h3 { margin-bottom: 15px; font-size: 1rem; }
-        .modal input {
+        .modal input, .modal select {
             width: 100%; padding: 8px; margin-bottom: 15px; background: var(--bg-primary);
             border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; outline: none;
         }
-        .modal input:focus { border-color: var(--accent); }
+        .modal input:focus, .modal select:focus { border-color: var(--accent); }
         .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
 
         @media (max-width: 768px) {
             .workspace { flex-direction: column; }
             .sidebar { width: 100%; height: 120px; border-right: none; border-bottom: 1px solid var(--border); }
-            .preview-container { width: 100%; height: 300px; border-left: none; border-top: 1px solid var(--border); }
+            .preview-container { width: 100%; height: 350px; border-left: none; border-top: 1px solid var(--border); }
             .btn-text span { display: none; }
             .btn-text { width: 35px; padding: 0; }
+            .minimap-container { display: none; }
         }
     </style>
 </head>
 <body>
 
     <div id="splash-screen">
-        <div class="splash-logo"><i class="fas fa-cube"></i> FerCy <span>Side Studio</span></div>
+        <div class="splash-logo"><i class="fas fa-cube"></i> FerCy Side <span>Studio</span></div>
         <div class="loading-bar"><div class="loading-progress"></div></div>
     </div>
+
+    <button id="exit-zen-btn" onclick="toggleZenMode()"><i class="fas fa-expand-arrows-alt"></i> Exit Zen Mode</button>
 
     <div class="modal-overlay" id="file-modal">
         <div class="modal">
             <h3>Buat File Baru</h3>
-            <input type="text" id="new-filename" placeholder="contoh: halaman.html">
+            <label style="font-size:0.8rem; color:var(--text-dim)">Nama File:</label>
+            <input type="text" id="new-filename" placeholder="contoh: landing.html">
+            
+            <label style="font-size:0.8rem; color:var(--text-dim)">Template Starter:</label>
+            <select id="template-select">
+                <option value="blank">Kosong (Blank)</option>
+                <option value="bootstrap">Bootstrap 5 CDN</option>
+                <option value="tailwind">Tailwind CSS CDN</option>
+                <option value="basic">HTML5 Boilerplate</option>
+            </select>
+
             <div class="modal-btns">
                 <button class="btn" onclick="closeModal()">Batal</button>
                 <button class="btn btn-run" onclick="confirmNewFile()" style="width: auto; padding: 0 15px;">Buat</button>
@@ -220,16 +297,32 @@
     <header>
         <div class="logo">
             <i class="fas fa-cube" style="color: var(--accent);"></i>
-            FerCy <span>Side Studio</span>
+            FerCy Side <span>Studio</span>
         </div>
         <div class="controls">
+            <button class="btn btn-text" id="record-btn" title="Rekam Layar Coding">
+                <div class="recording-dot"></div>
+                <i class="fas fa-video"></i> <span>Rec</span>
+            </button>
+
+            <button class="btn" id="zen-btn" title="Zen Mode (Focus)" onclick="toggleZenMode()">
+                <i class="fas fa-expand"></i>
+            </button>
+
+            <button class="btn btn-text" id="zip-btn" title="Export Project to ZIP">
+                <i class="fas fa-file-archive"></i> <span>ZIP</span>
+            </button>
+
+            <div style="width: 1px; height: 20px; background: var(--border); margin: 0 5px;"></div>
+
+            <button class="btn btn-text" id="format-btn" title="Format Code">
+                <i class="fas fa-broom"></i> <span>Format</span>
+            </button>
+            
             <button class="btn btn-text" id="add-file-btn" title="Tambah File Baru">
                 <i class="fas fa-plus"></i> <span>Baru</span>
             </button>
-            <button class="btn btn-text" id="save-btn" title="Download File">
-                <i class="fas fa-download"></i> <span>Simpan</span>
-            </button>
-            <div style="width: 1px; height: 20px; background: var(--border); margin: 0 5px;"></div>
+            
             <button class="btn" id="theme-btn" title="Ganti Tema"><i class="fas fa-moon"></i></button>
             <button class="btn btn-run btn-text" id="run-btn">
                 <i class="fas fa-play"></i> <span>RUN</span>
@@ -244,13 +337,19 @@
                 <span>Explorer</span>
                 <i class="fas fa-folder-open"></i>
             </div>
-            <ul class="file-list" id="file-list-container">
-            </ul>
+            <ul class="file-list" id="file-list-container"></ul>
         </aside>
 
         <div class="main-area">
-            <div class="editor-container">
-                <textarea id="code-editor"></textarea>
+            <div class="tab-bar" id="tab-bar-container"></div>
+            
+            <div class="editor-wrapper">
+                <div class="editor-container">
+                    <textarea id="code-editor"></textarea>
+                </div>
+                <div class="minimap-container">
+                    <div class="minimap-content" id="minimap-content"></div>
+                </div>
             </div>
         </div>
 
@@ -260,12 +359,22 @@
                 <i class="fas fa-globe"></i>
             </div>
             <iframe id="web-preview"></iframe>
+            
+            <div class="console-panel" id="custom-console">
+                <div class="console-header">
+                    <span>Console Output</span>
+                    <i class="fas fa-terminal" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
+                </div>
+                <div class="console-body" id="console-logs">
+                    <div class="log-entry"><span class="log-time">System</span> Ready.</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <footer>
-        <div class="left" id="status-bar">Siap</div>
-        <div class="right">FerCy Engine v2.0 (HTML Only)</div>
+        <div class="left" id="status-bar">Ready</div>
+        <div class="right"><i class="fas fa-check-circle"></i> Emmet Active | Auto-Save</div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
@@ -273,161 +382,326 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/xml-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/jump-to-line.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/codemirror-emmet@1.0.6/dist/codemirror-emmet.min.js"></script>
 
     <script>
-        // --- 1. SYSTEM STATE (Hanya HTML) ---
-        let files = [
-            { 
-                id: 1, 
-                name: 'index.html', 
-                lang: 'htmlmixed', 
-                content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { \n      background: #111; \n      color: white; \n      font-family: sans-serif; \n      text-align: center; \n      padding-top: 50px;\n    }\n    h1 { color: #00f2ff; }\n  </style>\n</head>\n<body>\n  <h1 id="title">Hello FerCy HTML</h1>\n  <p>Fitur Python, JS & CSS eksternal telah dihapus.</p>\n  \n  <script>\n    console.log("Internal script works!");\n  <\/script>\n</body>\n</html>' 
-            }
-        ];
+        const STORAGE_KEY = 'fercy_v3_ultimate';
         
-        let activeFileId = 1;
+        let savedData = localStorage.getItem(STORAGE_KEY);
+        let files = savedData ? JSON.parse(savedData) : [{ 
+            id: 1, name: 'index.html', lang: 'htmlmixed', 
+            content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #111; color: #00f2ff; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy V3 Ultimate</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
+        }];
+        
+        let activeFileId = files[0].id;
+        let openFiles = [files[0].id];
+        let mainEditor, minimapEditor; // Editor Instances
 
-        // --- 2. INITIALIZATION ---
-        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-            lineNumbers: true,
-            theme: 'dracula',
-            mode: 'htmlmixed',
-            autoCloseTags: true,
-            autoCloseBrackets: true
-        });
-
+        // --- INIT EDITORS (Main + Minimap) ---
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => { document.getElementById('splash-screen').classList.add('splash-hidden'); }, 2000);
+            setTimeout(() => { document.getElementById('splash-screen').classList.add('splash-hidden'); }, 1500);
+
+            // 1. Main Editor Setup (With Emmet & Search)
+            mainEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                lineNumbers: true,
+                theme: 'dracula',
+                mode: 'htmlmixed',
+                autoCloseTags: true,
+                autoCloseBrackets: true,
+                extraKeys: {
+                    "Ctrl-Space": "autocomplete",
+                    "Tab": "emmetExpandAbbreviation", // Saran No 1: Emmet Trigger
+                    "Esc": "emmetResetAbbreviation",
+                    "Enter": "emmetInsertLineBreak",
+                    "Ctrl-F": "findPersistent" // Saran No 2: Search Trigger
+                },
+                emmet: { preview: true } // Aktifkan Emmet
+            });
+
+            // 2. Minimap Editor Setup (Readonly, Scaled) - Saran No 3
+            minimapEditor = CodeMirror(document.getElementById('minimap-content'), {
+                value: mainEditor.getValue(),
+                mode: 'htmlmixed',
+                theme: 'dracula',
+                lineNumbers: false,
+                readOnly: "nocursor",
+                scrollbarStyle: "null" // Hide scrollbar
+            });
+
+            // Sync Main -> Minimap
+            mainEditor.on('change', () => {
+                const val = mainEditor.getValue();
+                minimapEditor.setValue(val);
+                // Auto save
+                const currentFile = files.find(f => f.id === activeFileId);
+                if(currentFile) {
+                    currentFile.content = val;
+                    saveToStorage();
+                }
+            });
+
+            // Sync Scroll Main -> Minimap
+            mainEditor.on('scroll', () => {
+                const info = mainEditor.getScrollInfo();
+                const percentage = info.top / (info.height - info.clientHeight);
+                const miniInfo = minimapEditor.getScrollInfo();
+                minimapEditor.scrollTo(0, percentage * (miniInfo.height - miniInfo.clientHeight));
+            });
+
             renderFileList();
-            switchFile(1);
+            renderTabs();
+            switchFile(activeFileId);
         });
 
-        // --- 3. FILE MANAGEMENT LOGIC ---
+        function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
+
+        // --- FILE & TABS SYSTEM ---
         function renderFileList() {
             const container = document.getElementById('file-list-container');
             container.innerHTML = '';
-
             files.forEach(file => {
                 const li = document.createElement('li');
                 li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
-                li.onclick = () => switchFile(file.id);
-
-                // Default Icon for HTML
-                let iconClass = 'fa-html5';
-                
-                li.innerHTML = `
-                    <div class="file-icon"><i class="fab ${iconClass}"></i></div>
-                    <span>${file.name}</span>
-                    <div class="file-actions">
-                        <i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})" title="Hapus"></i>
-                    </div>
-                `;
+                li.onclick = () => openFile(file.id);
+                li.innerHTML = `<div class="file-icon"><i class="fab fa-html5"></i></div><span>${file.name}</span>
+                    <div class="file-actions"><i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})"></i></div>`;
                 container.appendChild(li);
             });
         }
 
+        function renderTabs() {
+            const container = document.getElementById('tab-bar-container');
+            container.innerHTML = '';
+            openFiles.forEach(id => {
+                const file = files.find(f => f.id === id);
+                if(!file) return;
+                const tab = document.createElement('div');
+                tab.className = `tab ${id === activeFileId ? 'active' : ''}`;
+                tab.onclick = () => switchFile(id);
+                tab.innerHTML = `<i class="fab fa-html5" style="font-size:0.7rem"></i> ${file.name} 
+                    <i class="fas fa-times tab-close" onclick="closeTab(event, ${id})"></i>`;
+                container.appendChild(tab);
+            });
+        }
+
+        function openFile(id) {
+            if(!openFiles.includes(id)) openFiles.push(id);
+            switchFile(id);
+        }
+
         function switchFile(id) {
+            // Save prev
             const currentFile = files.find(f => f.id === activeFileId);
-            if(currentFile) currentFile.content = editor.getValue();
+            if(currentFile && mainEditor) currentFile.content = mainEditor.getValue();
 
             activeFileId = id;
             const nextFile = files.find(f => f.id === activeFileId);
-            
-            if(nextFile) {
-                editor.setValue(nextFile.content);
-                editor.setOption('mode', nextFile.lang);
+            if(nextFile && mainEditor) {
+                mainEditor.setValue(nextFile.content);
+                minimapEditor.setValue(nextFile.content);
                 document.getElementById('status-bar').innerText = `Editing: ${nextFile.name}`;
             }
             renderFileList();
+            renderTabs();
         }
 
-        // --- NEW FILE FEATURE (Simplified) ---
+        function closeTab(e, id) {
+            e.stopPropagation();
+            openFiles = openFiles.filter(fid => fid !== id);
+            if(openFiles.length === 0 && files.length > 0) openFiles.push(files[0].id);
+            if(activeFileId === id) switchFile(openFiles[openFiles.length - 1]);
+            else renderTabs();
+        }
+
+        // --- ZEN MODE (Saran No 5) ---
+        function toggleZenMode() {
+            document.body.classList.toggle('zen-mode');
+            mainEditor.refresh(); // Redraw editor to fit new size
+        }
+
+        // --- ZIP EXPORT (Saran No 4) ---
+        document.getElementById('zip-btn').onclick = function() {
+            const zip = new JSZip();
+            // Simpan state terakhir
+            const currentFile = files.find(f => f.id === activeFileId);
+            if(currentFile) currentFile.content = mainEditor.getValue();
+
+            files.forEach(file => {
+                zip.file(file.name, file.content);
+            });
+
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                saveAs(content, "FerCy_Project.zip");
+            });
+        };
+
+        // --- SCREEN RECORDER (Fitur Baru) ---
+        let mediaRecorder;
+        let recordedChunks = [];
+        const recBtn = document.getElementById('record-btn');
+        const recDot = document.querySelector('.recording-dot');
+        let isRecording = false;
+
+        recBtn.onclick = async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) recordedChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `FerCy_Recording_${Date.now()}.webm`;
+                        a.click();
+                        recordedChunks = [];
+                        stopRecUI();
+                    };
+
+                    mediaRecorder.start();
+                    startRecUI();
+                    
+                    // Handle user clicking "Stop sharing" on browser UI
+                    stream.getVideoTracks()[0].onended = () => {
+                        if(isRecording) recBtn.click();
+                    };
+
+                } catch (err) {
+                    console.error("Error: " + err);
+                }
+            } else {
+                mediaRecorder.stop();
+            }
+        };
+
+        function startRecUI() {
+            isRecording = true;
+            recDot.style.display = 'inline-block';
+            recBtn.querySelector('span').innerText = 'Stop';
+            recBtn.style.borderColor = 'red';
+            recBtn.style.color = 'red';
+        }
+
+        function stopRecUI() {
+            isRecording = false;
+            recDot.style.display = 'none';
+            recBtn.querySelector('span').innerText = 'Rec';
+            recBtn.style.borderColor = 'var(--border)';
+            recBtn.style.color = 'var(--text-main)';
+        }
+
+        // --- NEW FILE TEMPLATES (Saran No 6) ---
         const modal = document.getElementById('file-modal');
         const addBtn = document.getElementById('add-file-btn');
         const filenameInput = document.getElementById('new-filename');
+        const templateSelect = document.getElementById('template-select');
 
         addBtn.onclick = () => { modal.style.display = 'flex'; filenameInput.focus(); }
         function closeModal() { modal.style.display = 'none'; filenameInput.value = ''; }
 
-        function confirmNewFile() {
-            const name = filenameInput.value.trim();
-            if(!name) return alert("Nama file tidak boleh kosong!");
-            
-            // Default semua file baru dianggap HTML/Text biasa
-            let lang = 'htmlmixed';
-
-            const newFile = {
-                id: Date.now(),
-                name: name,
-                lang: lang,
-                content: '<!DOCTYPE html>\n<html>\n<body>\n  <h1>New File</h1>\n</body>\n</html>'
-            };
-
-            files.push(newFile);
-            closeModal();
-            switchFile(newFile.id);
-        }
-
-        // --- DELETE FILE FEATURE ---
-        window.deleteFile = function(e, id) {
-            e.stopPropagation(); 
-            if(files.length <= 1) return alert("Tidak bisa menghapus satu-satunya file!");
-            
-            if(confirm('Yakin hapus file ini?')) {
-                files = files.filter(f => f.id !== id);
-                if(activeFileId === id) switchFile(files[0].id);
-                else renderFileList();
-            }
-        }
-
-        // --- SAVE/DOWNLOAD FEATURE ---
-        document.getElementById('save-btn').onclick = () => {
-            const currentFile = files.find(f => f.id === activeFileId);
-            currentFile.content = editor.getValue();
-
-            const blob = new Blob([currentFile.content], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = currentFile.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            const btn = document.getElementById('save-btn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-check"></i> <span>Tersimpan</span>`;
-            setTimeout(() => btn.innerHTML = originalHTML, 2000);
+        const TEMPLATES = {
+            'blank': '<!DOCTYPE html>\n<html>\n<body>\n\n</body>\n</html>',
+            'basic': '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>',
+            'bootstrap': '<!DOCTYPE html>\n<html>\n<head>\n  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">\n</head>\n<body class="p-5">\n  <div class="alert alert-primary">Hello Bootstrap!</div>\n</body>\n</html>',
+            'tailwind': '<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-gray-900 text-white flex items-center justify-center h-screen">\n  <h1 class="text-4xl font-bold">Hello Tailwind!</h1>\n</body>\n</html>'
         };
 
-        // --- RUN ENGINE LOGIC (WEB ONLY) ---
+        function confirmNewFile() {
+            const name = filenameInput.value.trim();
+            const tmplKey = templateSelect.value;
+            if(!name) return alert("Nama file tidak boleh kosong!");
+            
+            const newFile = { 
+                id: Date.now(), 
+                name: name, 
+                lang: 'htmlmixed', 
+                content: TEMPLATES[tmplKey] || TEMPLATES['blank']
+            };
+            files.push(newFile);
+            saveToStorage();
+            closeModal();
+            openFile(newFile.id);
+        }
+
+        // --- UTILS (Format, Delete, Run, Console) ---
+        document.getElementById('format-btn').onclick = () => {
+            try {
+                const formatted = prettier.format(mainEditor.getValue(), { parser: "html", plugins: prettierPlugins });
+                mainEditor.setValue(formatted);
+            } catch(e) { alert("Code error, cannot format."); }
+        };
+
+        window.deleteFile = function(e, id) {
+            e.stopPropagation(); 
+            if(files.length <= 1) return alert("Minimal 1 file!");
+            if(confirm('Hapus file?')) {
+                files = files.filter(f => f.id !== id);
+                closeTab(e, id);
+                renderFileList();
+                saveToStorage();
+            }
+        };
+
         document.getElementById('run-btn').onclick = () => {
-            // Save current state first
             const activeFile = files.find(f => f.id === activeFileId);
-            activeFile.content = editor.getValue();
+            activeFile.content = mainEditor.getValue();
+            saveToStorage();
 
             const webPreview = document.getElementById('web-preview');
-            
-            // WEB MODE ONLY
-            webPreview.style.display = 'block';
-            
+            clearConsole();
+
+            // Intercept Console
+            const scriptInterception = `<script>
+                (function(){
+                    const send = (type, args) => {
+                        const msg = Array.from(args).join(' ');
+                        window.parent.postMessage({source:'fercy', type, message:msg}, '*');
+                    };
+                    console.log = (...a) => send('log', a);
+                    console.warn = (...a) => send('warn', a);
+                    console.error = (...a) => send('error', a);
+                    window.onerror = (m,u,l) => send('error', [m]);
+                })();
+            <\/script>`;
+
             const doc = webPreview.contentWindow.document;
             doc.open();
-            doc.write(activeFile.content);
+            doc.write(scriptInterception + activeFile.content);
             doc.close();
         };
 
-        // --- THEME LOGIC ---
+        window.addEventListener('message', (e) => {
+            if(e.data && e.data.source === 'fercy') {
+                const logs = document.getElementById('console-logs');
+                logs.innerHTML += `<div class="log-entry ${e.data.type}">[Log] ${e.data.message}</div>`;
+                logs.scrollTop = logs.scrollHeight;
+            }
+        });
+        function clearConsole() { document.getElementById('console-logs').innerHTML = ''; }
+
         let isDarkMode = true;
         document.getElementById('theme-btn').onclick = () => {
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('light-mode');
-            editor.setOption('theme', isDarkMode ? 'dracula' : 'eclipse');
-            document.getElementById('theme-btn').innerHTML = isDarkMode ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+            mainEditor.setOption('theme', isDarkMode ? 'dracula' : 'eclipse');
+            minimapEditor.setOption('theme', isDarkMode ? 'dracula' : 'eclipse');
         };
 
-        window.addEventListener('resize', () => editor.refresh());
+        window.addEventListener('resize', () => mainEditor.refresh());
     </script>
 </body>
 </html>
