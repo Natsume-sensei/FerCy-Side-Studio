@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.css">
     
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
     <script src="https://unpkg.com/prettier@2.8.8/parser-html.js"></script>
@@ -26,31 +26,43 @@
     <script src="https://emmet.io/js/emmet.js"></script>
 
     <style>
+        /* --- REDESIGN UI: THEME CONFIGURATION --- */
         :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #111625;
-            --bg-tertiary: #0f131f;
-            --accent: #00f2ff;
-            --danger: #ff4757;
-            --success: #2ecc71;
-            --warning: #f1c40f;
-            --text-main: #e0e6ed;
+            /* Warna Utama (Deep Blue/Slate) */
+            --bg-primary: #0f172a;       
+            --bg-secondary: #1e293b;     
+            --bg-tertiary: #334155;      
+            
+            /* Aksen (Cyan/Electric Blue) */
+            --accent: #0ea5e9;           
+            --accent-hover: #0284c7;
+            --accent-glow: rgba(14, 165, 233, 0.4);
+
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            
+            --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(17, 22, 37, 0.95);
-            --item-hover: rgba(255, 255, 255, 0.05);
-            --splash-bg: #05070a;
-            --tab-active-bg: #1d1f21;
+            --border: #334155;
+            
+            --glass: rgba(15, 23, 42, 0.9);
+            --item-hover: rgba(255, 255, 255, 0.08);
+            --splash-bg: #020617;
+            --tab-active-bg: #1e293b;
+            
+            --panel-left-width: 250px;
+            --panel-right-width: 500px;
         }
 
         body.light-mode {
-            --bg-primary: #f0f2f5;
+            --bg-primary: #f1f5f9;
             --bg-secondary: #ffffff;
             --bg-tertiary: #e2e8f0;
-            --accent: #2563eb;
-            --text-main: #1e293b;
+            --accent: #0284c7;
+            --text-main: #0f172a;
             --text-dim: #64748b;
-            --border: rgba(0, 0, 0, 0.1);
+            --border: #cbd5e1;
             --glass: rgba(255, 255, 255, 0.95);
             --item-hover: rgba(0, 0, 0, 0.05);
             --splash-bg: #ffffff;
@@ -59,16 +71,16 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s ease, color 0.2s ease; }
         
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-main);
-            height: 100dvh; 
+            height: 100vh; 
             display: flex; flex-direction: column; overflow: hidden;
         }
 
@@ -86,25 +98,47 @@
         @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
         @keyframes pulse { 50% { opacity: 0.7; } }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Updated Design) --- */
         header {
-            height: 55px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; background: var(--glass); backdrop-filter: blur(10px);
+            height: 60px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; background: var(--glass); backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 100;
         }
-        .logo { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        /* Tombol Toggle Sidebar */
+        .toggle-btn {
+            font-size: 1.2rem; color: var(--text-dim); cursor: pointer; padding: 5px;
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover, .toggle-btn.active { color: var(--accent); transform: scale(1.1); }
+
+        .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .logo i { filter: drop-shadow(0 0 5px var(--accent-glow)); }
         .logo span { color: var(--accent); }
-        .controls { display: flex; gap: 10px; align-items: center; }
+        
+        .controls { display: flex; gap: 8px; align-items: center; }
 
         .btn {
-            background: transparent; border: 1px solid var(--border); color: var(--text-main);
-            width: 35px; height: 35px; border-radius: 6px; cursor: pointer;
+            background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+            height: 36px; padding: 0 12px; border-radius: 8px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; position: relative;
+            font-size: 0.9rem; transition: all 0.2s;
         }
-        .btn:hover { background: var(--item-hover); border-color: var(--accent); color: var(--accent); }
+        .btn:hover { background: var(--item-hover); border-color: var(--text-dim); color: var(--text-main); }
         .btn-text { width: auto; padding: 0 15px; gap: 8px; font-weight: 500; }
-        .btn-run { background: var(--accent); color: var(--bg-primary); border: none; }
-        .btn-run:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent); opacity: 0.9; color: var(--bg-primary);}
+        
+        /* Run Button Style (Pill Gradient) */
+        .btn-run { 
+            background: linear-gradient(135deg, var(--accent), #2563eb); 
+            color: white; border: none; font-weight: 700;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .btn-run:hover { 
+            background: linear-gradient(135deg, #2563eb, var(--accent));
+            box-shadow: 0 0 20px var(--accent-glow); opacity: 1; color: white;
+        }
         
         .recording-dot {
             width: 10px; height: 10px; background: red; border-radius: 50%;
@@ -112,28 +146,40 @@
         }
         @keyframes blink-rec { 50% { opacity: 0; } }
 
-        /* --- WORKSPACE LAYOUT --- */
+        /* --- WORKSPACE LAYOUT (SLIDING PANELS LOGIC) --- */
         .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        /* Sidebar */
+        /* Sidebar (Left Panel) */
         .sidebar {
-            width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border);
+            width: var(--panel-left-width); 
+            background: var(--bg-primary); 
+            border-right: 1px solid var(--border);
             display: flex; flex-direction: column; flex-shrink: 0;
-            transition: transform 0.3s ease;
+            /* ANIMASI GESER */
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            white-space: nowrap; /* Mencegah teks turun saat panel menutup */
         }
+        /* Kelas untuk menutup panel */
+        .sidebar.collapsed { width: 0; border-right: none; }
+
         .sidebar-header {
-            padding: 10px 15px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+            padding: 15px 20px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
             color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); flex-shrink: 0;
+            border-bottom: 1px solid var(--border); flex-shrink: 0; font-weight: 700;
         }
-        .file-list { list-style: none; padding: 5px; overflow-y: auto; flex: 1; }
+        .file-list { list-style: none; padding: 10px; overflow-y: auto; flex: 1; }
         .file-item {
-            padding: 8px 10px; display: flex; align-items: center; gap: 10px;
-            cursor: pointer; border-radius: 4px; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 2px;
+            padding: 10px 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+            cursor: pointer; border-radius: 6px; font-size: 0.9rem; color: var(--text-dim);
+            border: 1px solid transparent;
         }
         .file-item:hover { background: var(--item-hover); color: var(--text-main); }
-        .file-item.active { background: rgba(0, 242, 255, 0.1); color: var(--accent); border-left: 2px solid var(--accent); }
-        body.light-mode .file-item.active { background: rgba(37, 99, 235, 0.1); }
+        .file-item.active { 
+            background: rgba(14, 165, 233, 0.15); 
+            color: var(--accent); 
+            border-color: rgba(14, 165, 233, 0.3);
+        }
         
         .file-icon { width: 15px; text-align: center; }
         .file-actions { margin-left: auto; display: none; gap: 5px; }
@@ -141,46 +187,44 @@
         .delete-btn { color: var(--danger); font-size: 0.8rem; padding: 2px; }
 
         /* --- MAIN AREA (Tabs + Editor) --- */
+        /* Flex 1 agar mengisi ruang kosong saat panel ditutup */
         .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
         
         /* TAB BAR */
         .tab-bar {
-            height: 35px; background: var(--bg-primary); display: flex; align-items: flex-end;
+            height: 40px; background: var(--bg-primary); display: flex; align-items: flex-end;
             padding-left: 0; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
         }
         .tab {
-            height: 100%; padding: 0 15px; display: flex; align-items: center; gap: 8px;
-            font-size: 0.8rem; color: var(--text-dim); border-right: 1px solid var(--border);
+            height: 100%; padding: 0 20px; display: flex; align-items: center; gap: 8px;
+            font-size: 0.85rem; color: var(--text-dim); border-right: 1px solid var(--border);
             cursor: pointer; background: var(--bg-primary); position: relative; user-select: none;
-            min-width: 120px;
+            min-width: 140px; border-top: 2px solid transparent;
         }
-        .tab.active { background: var(--tab-active-bg); color: var(--text-main); border-top: 2px solid var(--accent); }
-        .tab-close { margin-left: auto; font-size: 0.7rem; opacity: 0; border-radius: 50%; padding: 3px; }
+        .tab.active { background: var(--bg-secondary); color: var(--text-main); border-top: 2px solid var(--accent); }
+        .tab-close { margin-left: auto; font-size: 0.7rem; opacity: 0; border-radius: 50%; padding: 4px; }
         .tab:hover .tab-close { opacity: 1; }
         .tab-close:hover { background: var(--danger); color: white; }
 
         /* EDITOR CONTAINER WITH MINIMAP */
-        .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; }
+        .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; background: var(--bg-primary); }
         .editor-container { flex: 1; position: relative; overflow: hidden; }
         
-        /* MINIMAP (Saran No 3) */
+        /* MINIMAP */
         .minimap-container {
-            width: 100px; background: var(--bg-primary); border-left: 1px solid var(--border);
+            width: 80px; background: var(--bg-primary); border-left: 1px solid var(--border);
             position: relative; overflow: hidden; user-select: none; cursor: default;
-            flex-shrink: 0; display: none; /* Hidden on mobile */
+            flex-shrink: 0; display: none; 
         }
         @media (min-width: 768px) { .minimap-container { display: block; } }
-        
-        /* Sync styling for minimap content */
         .minimap-content {
             transform: scale(0.15); transform-origin: top left;
-            width: 666%; /* scale 0.15 means width needs to be 100/0.15 */
-            height: 100%; pointer-events: none;
+            width: 666%; height: 100%; pointer-events: none;
         }
 
         .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: transparent !important; }
         
-        /* CUSTOM DIALOG (Search Ctrl+F) - Saran No 2 */
+        /* CUSTOM DIALOG (Search Ctrl+F) */
         .CodeMirror-dialog {
             background: var(--bg-secondary) !important; color: var(--text-main) !important;
             border-bottom: 1px solid var(--border); padding: 5px 10px !important;
@@ -190,84 +234,97 @@
             outline: none; border-radius: 4px; padding: 2px 5px;
         }
 
-        /* --- PREVIEW & CONSOLE AREA --- */
+        /* --- PREVIEW & CONSOLE AREA (Right Panel) --- */
         .preview-container {
-            width: 45%; border-left: 1px solid var(--border); display: flex; flex-direction: column;
-            background: #fff; overflow: hidden;
+            width: var(--panel-right-width); 
+            border-left: 1px solid var(--border); display: flex; flex-direction: column;
+            background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;
+            /* ANIMASI GESER */
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+        /* Kelas untuk menutup panel kanan */
+        .preview-container.collapsed { width: 0; border-left: none; }
+
         .preview-header {
-            padding: 8px 15px; background: var(--bg-tertiary); color: var(--text-dim);
-            font-size: 0.8rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0;
+            padding: 10px 15px; background: var(--bg-primary); color: var(--text-dim);
+            font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--border); flex-shrink: 0; font-weight: bold;
         }
-        iframe { flex: 1; border: none; width: 100%; }
+        .preview-header span i { margin-right: 5px; }
+
+        iframe { flex: 1; border: none; width: 100%; background: #fff; }
         
         /* CONSOLE EMULATOR */
         .console-panel {
-            height: 150px; background: #111; border-top: 1px solid var(--border);
+            height: 180px; background: #0b1120; border-top: 1px solid var(--border);
             display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
         }
         .console-header {
-            padding: 5px 10px; background: #222; color: #fff; font-size: 0.75rem;
-            display: flex; justify-content: space-between; border-bottom: 1px solid #333;
+            padding: 8px 15px; background: #1e293b; color: var(--text-dim); font-size: 0.75rem;
+            display: flex; justify-content: space-between; border-bottom: 1px solid var(--border);
         }
         .console-body { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.85rem; color: #eee; }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 2px; }
         .log-entry.error { color: #ff6b6b; }
         .log-entry.warn { color: #feca57; }
         .log-entry.log { color: #2ecc71; }
-        .log-time { color: #666; font-size: 0.7rem; margin-right: 8px; }
+        .log-time { color: #64748b; font-size: 0.7rem; margin-right: 8px; }
 
         /* Footer */
         footer {
-            height: 25px; background: var(--bg-secondary); border-top: 1px solid var(--border);
+            height: 30px; background: var(--bg-primary); border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
             font-size: 0.75rem; color: var(--text-dim); z-index: 50; flex-shrink: 0;
         }
 
-        /* ZEN MODE (Saran No 5) */
+        /* ZEN MODE */
         body.zen-mode header, body.zen-mode footer, body.zen-mode .sidebar, body.zen-mode .tab-bar, body.zen-mode .console-panel { display: none !important; }
         body.zen-mode .workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
         body.zen-mode .preview-container { width: 50%; }
+        /* Zen mode override sliding functionality */
+        body.zen-mode .preview-container.collapsed { width: 0; } 
         body.zen-mode #exit-zen-btn { display: block; }
         
         #exit-zen-btn {
             position: fixed; bottom: 20px; right: 20px; z-index: 10000;
-            background: var(--accent); color: var(--bg-primary); padding: 10px 20px;
+            background: var(--accent); color: white; padding: 10px 20px;
             border-radius: 30px; border: none; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 20px var(--accent); display: none;
+            box-shadow: 0 0 20px var(--accent-glow); display: none;
         }
 
         /* Modal Styles */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
             z-index: 1000; display: none; align-items: center; justify-content: center;
         }
         .modal {
-            background: var(--bg-secondary); padding: 20px; border-radius: 8px; width: 350px;
-            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--bg-secondary); padding: 25px; border-radius: 12px; width: 400px;
+            border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .modal h3 { margin-bottom: 15px; font-size: 1rem; }
+        .modal h3 { margin-bottom: 20px; font-size: 1.2rem; color: var(--accent); }
         .modal input, .modal select {
-            width: 100%; padding: 8px; margin-bottom: 15px; background: var(--bg-primary);
-            border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; outline: none;
+            width: 100%; padding: 10px; margin-bottom: 15px; background: var(--bg-primary);
+            border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; outline: none;
         }
         .modal input:focus, .modal select:focus { border-color: var(--accent); }
         .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
 
         @media (max-width: 768px) {
             .workspace { flex-direction: column; }
-            .sidebar { width: 100%; height: 120px; border-right: none; border-bottom: 1px solid var(--border); }
+            .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
             .preview-container { width: 100%; height: 350px; border-left: none; border-top: 1px solid var(--border); }
             .btn-text span { display: none; }
             .btn-text { width: 35px; padding: 0; }
             .minimap-container { display: none; }
+            /* Hide toggle buttons on mobile as layout changes */
+            .toggle-btn { display: none; }
         }
     </style>
 </head>
 <body>
 
     <div id="splash-screen">
-        <div class="splash-logo"><i class="fas fa-cube"></i> FerCy Side <span>Studio</span></div>
+        <div class="splash-logo"><i class="fas fa-layer-group"></i> FerCy <span>Side Studio</span></div>
         <div class="loading-bar"><div class="loading-progress"></div></div>
     </div>
 
@@ -295,10 +352,15 @@
     </div>
 
     <header>
-        <div class="logo">
-            <i class="fas fa-cube" style="color: var(--accent);"></i>
-            FerCy Side <span>Studio</span>
+        <div class="header-left">
+            <i class="fas fa-bars toggle-btn" id="toggle-left-btn" title="Toggle Explorer"></i>
+            
+            <div class="logo">
+                <i class="fas fa-layer-group" style="color: var(--accent);"></i>
+                FerCy <span>Side</span>
+            </div>
         </div>
+        
         <div class="controls">
             <button class="btn btn-text" id="record-btn" title="Rekam Layar Coding">
                 <div class="recording-dot"></div>
@@ -324,15 +386,18 @@
             </button>
             
             <button class="btn" id="theme-btn" title="Ganti Tema"><i class="fas fa-moon"></i></button>
+            
             <button class="btn btn-run btn-text" id="run-btn">
                 <i class="fas fa-play"></i> <span>RUN</span>
             </button>
+            
+            <i class="fas fa-columns toggle-btn" id="toggle-right-btn" title="Toggle Preview" style="margin-left: 10px;"></i>
         </div>
     </header>
 
     <div class="workspace">
         
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar-panel">
             <div class="sidebar-header">
                 <span>Explorer</span>
                 <i class="fas fa-folder-open"></i>
@@ -353,17 +418,17 @@
             </div>
         </div>
 
-        <div class="preview-container">
+        <div class="preview-container" id="preview-panel">
             <div class="preview-header">
-                <span id="output-label">Web Browser Preview</span>
-                <i class="fas fa-globe"></i>
+                <span id="output-label"><i class="fas fa-globe"></i> Web Browser Preview</span>
+                <i class="fas fa-sync-alt" onclick="document.getElementById('run-btn').click()" style="cursor: pointer;" title="Refresh"></i>
             </div>
             <iframe id="web-preview"></iframe>
             
             <div class="console-panel" id="custom-console">
                 <div class="console-header">
-                    <span>Console Output</span>
-                    <i class="fas fa-terminal" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
+                    <span><i class="fas fa-terminal"></i> Console Output</span>
+                    <i class="fas fa-trash" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
                 </div>
                 <div class="console-body" id="console-logs">
                     <div class="log-entry"><span class="log-time">System</span> Ready.</div>
@@ -373,7 +438,10 @@
     </div>
 
     <footer>
-        <div class="left" id="status-bar">Ready</div>
+        <div class="left" id="status-bar" style="display: flex; gap: 15px;">
+            <span><i class="fas fa-code-branch"></i> main</span>
+            <span id="status-text">Ready</span>
+        </div>
         <div class="right"><i class="fas fa-check-circle"></i> Emmet Active | Auto-Save</div>
     </footer>
 
@@ -399,7 +467,7 @@
         let savedData = localStorage.getItem(STORAGE_KEY);
         let files = savedData ? JSON.parse(savedData) : [{ 
             id: 1, name: 'index.html', lang: 'htmlmixed', 
-            content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #111; color: #00f2ff; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy V3 Ultimate</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
+            content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #0f172a; color: #0ea5e9; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy V3 Ultimate</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
         }];
         
         let activeFileId = files[0].id;
@@ -462,6 +530,28 @@
             switchFile(activeFileId);
         });
 
+        // --- SLIDING PANEL LOGIC (NEW FEATURE) ---
+        const sidebarPanel = document.getElementById('sidebar-panel');
+        const previewPanel = document.getElementById('preview-panel');
+        const toggleLeftBtn = document.getElementById('toggle-left-btn');
+        const toggleRightBtn = document.getElementById('toggle-right-btn');
+
+        // Toggle Left Panel
+        toggleLeftBtn.addEventListener('click', () => {
+            sidebarPanel.classList.toggle('collapsed');
+            toggleLeftBtn.classList.toggle('active');
+            // Refresh editor to recalculate width
+            setTimeout(() => mainEditor.refresh(), 450);
+        });
+
+        // Toggle Right Panel
+        toggleRightBtn.addEventListener('click', () => {
+            previewPanel.classList.toggle('collapsed');
+            toggleRightBtn.classList.toggle('active');
+            // Refresh editor to recalculate width
+            setTimeout(() => mainEditor.refresh(), 450);
+        });
+
         function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
 
         // --- FILE & TABS SYSTEM ---
@@ -472,7 +562,7 @@
                 const li = document.createElement('li');
                 li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
                 li.onclick = () => openFile(file.id);
-                li.innerHTML = `<div class="file-icon"><i class="fab fa-html5"></i></div><span>${file.name}</span>
+                li.innerHTML = `<div class="file-icon"><i class="fab fa-html5" style="color:#e34c26"></i></div><span>${file.name}</span>
                     <div class="file-actions"><i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})"></i></div>`;
                 container.appendChild(li);
             });
@@ -487,7 +577,7 @@
                 const tab = document.createElement('div');
                 tab.className = `tab ${id === activeFileId ? 'active' : ''}`;
                 tab.onclick = () => switchFile(id);
-                tab.innerHTML = `<i class="fab fa-html5" style="font-size:0.7rem"></i> ${file.name} 
+                tab.innerHTML = `<i class="fab fa-html5" style="font-size:0.7rem; color:#e34c26"></i> ${file.name} 
                     <i class="fas fa-times tab-close" onclick="closeTab(event, ${id})"></i>`;
                 container.appendChild(tab);
             });
@@ -508,7 +598,7 @@
             if(nextFile && mainEditor) {
                 mainEditor.setValue(nextFile.content);
                 minimapEditor.setValue(nextFile.content);
-                document.getElementById('status-bar').innerText = `Editing: ${nextFile.name}`;
+                document.getElementById('status-text').innerText = `Editing: ${nextFile.name}`;
             }
             renderFileList();
             renderTabs();
@@ -601,7 +691,7 @@
             recDot.style.display = 'none';
             recBtn.querySelector('span').innerText = 'Rec';
             recBtn.style.borderColor = 'var(--border)';
-            recBtn.style.color = 'var(--text-main)';
+            recBtn.style.color = 'var(--text-dim)';
         }
 
         // --- NEW FILE TEMPLATES (Saran No 6) ---
