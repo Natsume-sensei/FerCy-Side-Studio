@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FerCy Side Studio</title>
+    <title>FerCy Side Studio + Python</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
@@ -22,35 +22,29 @@
     <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
     <script src="https://emmet.io/js/emmet.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 
     <style>
         /* --- REDESIGN UI: THEME CONFIGURATION --- */
         :root {
-            /* Warna Utama (Deep Blue/Slate) */
             --bg-primary: #0f172a;       
             --bg-secondary: #1e293b;     
             --bg-tertiary: #334155;      
-            
-            /* Aksen (Cyan/Electric Blue) */
             --accent: #0ea5e9;           
             --accent-hover: #0284c7;
             --accent-glow: rgba(14, 165, 233, 0.4);
-
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
-            
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
             --border: #334155;
-            
             --glass: rgba(15, 23, 42, 0.9);
             --item-hover: rgba(255, 255, 255, 0.08);
             --splash-bg: #020617;
             --tab-active-bg: #1e293b;
-            
             --panel-left-width: 250px;
             --panel-right-width: 500px;
         }
@@ -98,7 +92,7 @@
         @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
         @keyframes pulse { 50% { opacity: 0.7; } }
 
-        /* --- HEADER (Updated Design) --- */
+        /* --- HEADER --- */
         header {
             height: 60px; display: flex; align-items: center; justify-content: space-between;
             padding: 0 20px; background: var(--glass); backdrop-filter: blur(10px);
@@ -107,7 +101,6 @@
         
         .header-left { display: flex; align-items: center; gap: 15px; }
         
-        /* Tombol Toggle Sidebar */
         .toggle-btn {
             font-size: 1.2rem; color: var(--text-dim); cursor: pointer; padding: 5px;
             transition: all 0.2s;
@@ -129,7 +122,7 @@
         .btn:hover { background: var(--item-hover); border-color: var(--text-dim); color: var(--text-main); }
         .btn-text { width: auto; padding: 0 15px; gap: 8px; font-weight: 500; }
         
-        /* Run Button Style (Pill Gradient) */
+        /* Run Button Style */
         .btn-run { 
             background: linear-gradient(135deg, var(--accent), #2563eb); 
             color: white; border: none; font-weight: 700;
@@ -146,21 +139,18 @@
         }
         @keyframes blink-rec { 50% { opacity: 0; } }
 
-        /* --- WORKSPACE LAYOUT (SLIDING PANELS LOGIC) --- */
+        /* --- WORKSPACE LAYOUT --- */
         .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
         
-        /* Sidebar (Left Panel) */
+        /* Sidebar */
         .sidebar {
             width: var(--panel-left-width); 
             background: var(--bg-primary); 
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column; flex-shrink: 0;
-            /* ANIMASI GESER */
             transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden;
-            white-space: nowrap; /* Mencegah teks turun saat panel menutup */
+            overflow: hidden; white-space: nowrap;
         }
-        /* Kelas untuk menutup panel */
         .sidebar.collapsed { width: 0; border-right: none; }
 
         .sidebar-header {
@@ -186,11 +176,9 @@
         .file-item:hover .file-actions { display: flex; }
         .delete-btn { color: var(--danger); font-size: 0.8rem; padding: 2px; }
 
-        /* --- MAIN AREA (Tabs + Editor) --- */
-        /* Flex 1 agar mengisi ruang kosong saat panel ditutup */
+        /* --- MAIN AREA --- */
         .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
         
-        /* TAB BAR */
         .tab-bar {
             height: 40px; background: var(--bg-primary); display: flex; align-items: flex-end;
             padding-left: 0; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
@@ -206,11 +194,10 @@
         .tab:hover .tab-close { opacity: 1; }
         .tab-close:hover { background: var(--danger); color: white; }
 
-        /* EDITOR CONTAINER WITH MINIMAP */
+        /* EDITOR CONTAINER */
         .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; background: var(--bg-primary); }
         .editor-container { flex: 1; position: relative; overflow: hidden; }
         
-        /* MINIMAP */
         .minimap-container {
             width: 80px; background: var(--bg-primary); border-left: 1px solid var(--border);
             position: relative; overflow: hidden; user-select: none; cursor: default;
@@ -224,7 +211,6 @@
 
         .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: transparent !important; }
         
-        /* CUSTOM DIALOG (Search Ctrl+F) */
         .CodeMirror-dialog {
             background: var(--bg-secondary) !important; color: var(--text-main) !important;
             border-bottom: 1px solid var(--border); padding: 5px 10px !important;
@@ -234,15 +220,13 @@
             outline: none; border-radius: 4px; padding: 2px 5px;
         }
 
-        /* --- PREVIEW & CONSOLE AREA (Right Panel) --- */
+        /* --- PREVIEW & CONSOLE AREA --- */
         .preview-container {
             width: var(--panel-right-width); 
             border-left: 1px solid var(--border); display: flex; flex-direction: column;
             background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;
-            /* ANIMASI GESER */
             transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        /* Kelas untuk menutup panel kanan */
         .preview-container.collapsed { width: 0; border-left: none; }
 
         .preview-header {
@@ -254,7 +238,7 @@
 
         iframe { flex: 1; border: none; width: 100%; background: #fff; }
         
-        /* CONSOLE EMULATOR */
+        /* CONSOLE */
         .console-panel {
             height: 180px; background: #0b1120; border-top: 1px solid var(--border);
             display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
@@ -268,6 +252,7 @@
         .log-entry.error { color: #ff6b6b; }
         .log-entry.warn { color: #feca57; }
         .log-entry.log { color: #2ecc71; }
+        .log-entry.system { color: #0ea5e9; font-weight: bold; }
         .log-time { color: #64748b; font-size: 0.7rem; margin-right: 8px; }
 
         /* Footer */
@@ -281,7 +266,6 @@
         body.zen-mode header, body.zen-mode footer, body.zen-mode .sidebar, body.zen-mode .tab-bar, body.zen-mode .console-panel { display: none !important; }
         body.zen-mode .workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
         body.zen-mode .preview-container { width: 50%; }
-        /* Zen mode override sliding functionality */
         body.zen-mode .preview-container.collapsed { width: 0; } 
         body.zen-mode #exit-zen-btn { display: block; }
         
@@ -316,7 +300,6 @@
             .btn-text span { display: none; }
             .btn-text { width: 35px; padding: 0; }
             .minimap-container { display: none; }
-            /* Hide toggle buttons on mobile as layout changes */
             .toggle-btn { display: none; }
         }
     </style>
@@ -326,6 +309,7 @@
     <div id="splash-screen">
         <div class="splash-logo"><i class="fas fa-layer-group"></i> FerCy <span>Side Studio</span></div>
         <div class="loading-bar"><div class="loading-progress"></div></div>
+        <div style="margin-top: 10px; color: var(--text-dim); font-size: 0.8rem;">Memuat Python Engine...</div>
     </div>
 
     <button id="exit-zen-btn" onclick="toggleZenMode()"><i class="fas fa-expand-arrows-alt"></i> Exit Zen Mode</button>
@@ -334,11 +318,12 @@
         <div class="modal">
             <h3>Buat File Baru</h3>
             <label style="font-size:0.8rem; color:var(--text-dim)">Nama File:</label>
-            <input type="text" id="new-filename" placeholder="contoh: landing.html">
+            <input type="text" id="new-filename" placeholder="contoh: script.py atau index.html">
             
             <label style="font-size:0.8rem; color:var(--text-dim)">Template Starter:</label>
             <select id="template-select">
                 <option value="blank">Kosong (Blank)</option>
+                <option value="python">Python Basic 🐍</option>
                 <option value="bootstrap">Bootstrap 5 CDN</option>
                 <option value="tailwind">Tailwind CSS CDN</option>
                 <option value="basic">HTML5 Boilerplate</option>
@@ -431,7 +416,7 @@
                     <i class="fas fa-trash" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
                 </div>
                 <div class="console-body" id="console-logs">
-                    <div class="log-entry"><span class="log-time">System</span> Ready.</div>
+                    <div class="log-entry system"><span class="log-time">System</span> Initializing Environment...</div>
                 </div>
             </div>
         </div>
@@ -442,7 +427,7 @@
             <span><i class="fas fa-code-branch"></i> main</span>
             <span id="status-text">Ready</span>
         </div>
-        <div class="right"><i class="fas fa-check-circle"></i> Emmet Active | Auto-Save</div>
+        <div class="right" id="python-status"><i class="fas fa-circle-notch fa-spin"></i> Loading Python...</div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
@@ -450,6 +435,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/xml-hint.min.js"></script>
@@ -465,20 +451,44 @@
         const STORAGE_KEY = 'fercy_v3_ultimate';
         
         let savedData = localStorage.getItem(STORAGE_KEY);
-        let files = savedData ? JSON.parse(savedData) : [{ 
-            id: 1, name: 'index.html', lang: 'htmlmixed', 
-            content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #0f172a; color: #0ea5e9; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy V3 Ultimate</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
-        }];
+        // Default file ada Python juga
+        let files = savedData ? JSON.parse(savedData) : [
+            { 
+                id: 1, name: 'index.html', lang: 'htmlmixed', 
+                content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #0f172a; color: #0ea5e9; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy Side Studio</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
+            },
+            {
+                id: 2, name: 'main.py', lang: 'python',
+                content: '# Contoh Kode Python di FerCy\n\ndef sapa_fercy(nama):\n    return f"Halo {nama}, selamat datang di FerCy OS Environment!"\n\nprint(sapa_fercy("User"))\n\n# Loop sederhana\nfor i in range(1, 6):\n    print(f"Looping ke-{i}")'
+            }
+        ];
         
         let activeFileId = files[0].id;
         let openFiles = [files[0].id];
         let mainEditor, minimapEditor; // Editor Instances
+        let pyodideInstance = null; // Variable untuk menyimpan engine Python
+
+        // --- INIT PYODIDE ENGINE (BARU) ---
+        async function initPyodide() {
+            try {
+                pyodideInstance = await loadPyodide();
+                document.getElementById('python-status').innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e"></i> Python Ready';
+                addToConsole('system', 'Python Engine (Pyodide) berhasil dimuat!');
+                // Hide splash after python loads (or 1.5s whichever later)
+            } catch (err) {
+                document.getElementById('python-status').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red"></i> Python Error';
+                addToConsole('error', 'Gagal memuat Pyodide: ' + err);
+            }
+        }
 
         // --- INIT EDITORS (Main + Minimap) ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Load Python Async
+            initPyodide();
+
             setTimeout(() => { document.getElementById('splash-screen').classList.add('splash-hidden'); }, 1500);
 
-            // 1. Main Editor Setup (With Emmet & Search)
+            // 1. Main Editor Setup
             mainEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
                 lineNumbers: true,
                 theme: 'dracula',
@@ -487,29 +497,28 @@
                 autoCloseBrackets: true,
                 extraKeys: {
                     "Ctrl-Space": "autocomplete",
-                    "Tab": "emmetExpandAbbreviation", // Saran No 1: Emmet Trigger
+                    "Tab": "emmetExpandAbbreviation",
                     "Esc": "emmetResetAbbreviation",
                     "Enter": "emmetInsertLineBreak",
-                    "Ctrl-F": "findPersistent" // Saran No 2: Search Trigger
+                    "Ctrl-F": "findPersistent"
                 },
-                emmet: { preview: true } // Aktifkan Emmet
+                emmet: { preview: true }
             });
 
-            // 2. Minimap Editor Setup (Readonly, Scaled) - Saran No 3
+            // 2. Minimap Editor Setup
             minimapEditor = CodeMirror(document.getElementById('minimap-content'), {
                 value: mainEditor.getValue(),
                 mode: 'htmlmixed',
                 theme: 'dracula',
                 lineNumbers: false,
                 readOnly: "nocursor",
-                scrollbarStyle: "null" // Hide scrollbar
+                scrollbarStyle: "null"
             });
 
-            // Sync Main -> Minimap
+            // Sync Logic
             mainEditor.on('change', () => {
                 const val = mainEditor.getValue();
                 minimapEditor.setValue(val);
-                // Auto save
                 const currentFile = files.find(f => f.id === activeFileId);
                 if(currentFile) {
                     currentFile.content = val;
@@ -517,7 +526,6 @@
                 }
             });
 
-            // Sync Scroll Main -> Minimap
             mainEditor.on('scroll', () => {
                 const info = mainEditor.getScrollInfo();
                 const percentage = info.top / (info.height - info.clientHeight);
@@ -530,31 +538,34 @@
             switchFile(activeFileId);
         });
 
-        // --- SLIDING PANEL LOGIC (NEW FEATURE) ---
+        // --- SLIDING PANEL LOGIC ---
         const sidebarPanel = document.getElementById('sidebar-panel');
         const previewPanel = document.getElementById('preview-panel');
         const toggleLeftBtn = document.getElementById('toggle-left-btn');
         const toggleRightBtn = document.getElementById('toggle-right-btn');
 
-        // Toggle Left Panel
         toggleLeftBtn.addEventListener('click', () => {
             sidebarPanel.classList.toggle('collapsed');
             toggleLeftBtn.classList.toggle('active');
-            // Refresh editor to recalculate width
             setTimeout(() => mainEditor.refresh(), 450);
         });
 
-        // Toggle Right Panel
         toggleRightBtn.addEventListener('click', () => {
             previewPanel.classList.toggle('collapsed');
             toggleRightBtn.classList.toggle('active');
-            // Refresh editor to recalculate width
             setTimeout(() => mainEditor.refresh(), 450);
         });
 
         function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
 
         // --- FILE & TABS SYSTEM ---
+        function getIconForFile(filename) {
+            if(filename.endsWith('.py')) return '<i class="fab fa-python" style="color:#facc15"></i>';
+            if(filename.endsWith('.css')) return '<i class="fab fa-css3" style="color:#3b82f6"></i>';
+            if(filename.endsWith('.js')) return '<i class="fab fa-js" style="color:#f7df1e"></i>';
+            return '<i class="fab fa-html5" style="color:#e34c26"></i>';
+        }
+
         function renderFileList() {
             const container = document.getElementById('file-list-container');
             container.innerHTML = '';
@@ -562,7 +573,7 @@
                 const li = document.createElement('li');
                 li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
                 li.onclick = () => openFile(file.id);
-                li.innerHTML = `<div class="file-icon"><i class="fab fa-html5" style="color:#e34c26"></i></div><span>${file.name}</span>
+                li.innerHTML = `<div class="file-icon">${getIconForFile(file.name)}</div><span>${file.name}</span>
                     <div class="file-actions"><i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})"></i></div>`;
                 container.appendChild(li);
             });
@@ -577,7 +588,7 @@
                 const tab = document.createElement('div');
                 tab.className = `tab ${id === activeFileId ? 'active' : ''}`;
                 tab.onclick = () => switchFile(id);
-                tab.innerHTML = `<i class="fab fa-html5" style="font-size:0.7rem; color:#e34c26"></i> ${file.name} 
+                tab.innerHTML = `${getIconForFile(file.name)} ${file.name} 
                     <i class="fas fa-times tab-close" onclick="closeTab(event, ${id})"></i>`;
                 container.appendChild(tab);
             });
@@ -599,6 +610,17 @@
                 mainEditor.setValue(nextFile.content);
                 minimapEditor.setValue(nextFile.content);
                 document.getElementById('status-text').innerText = `Editing: ${nextFile.name}`;
+
+                // --- LOGIKA GANTI MODE EDITOR (PYTHON VS HTML) ---
+                if (nextFile.name.endsWith('.py')) {
+                    mainEditor.setOption("mode", "python");
+                    minimapEditor.setOption("mode", "python");
+                    document.getElementById('output-label').innerHTML = '<i class="fab fa-python"></i> Python Console Output';
+                } else {
+                    mainEditor.setOption("mode", "htmlmixed");
+                    minimapEditor.setOption("mode", "htmlmixed");
+                    document.getElementById('output-label').innerHTML = '<i class="fas fa-globe"></i> Web Browser Preview';
+                }
             }
             renderFileList();
             renderTabs();
@@ -612,89 +634,25 @@
             else renderTabs();
         }
 
-        // --- ZEN MODE (Saran No 5) ---
+        // --- ZEN MODE ---
         function toggleZenMode() {
             document.body.classList.toggle('zen-mode');
-            mainEditor.refresh(); // Redraw editor to fit new size
+            mainEditor.refresh();
         }
 
-        // --- ZIP EXPORT (Saran No 4) ---
+        // --- ZIP EXPORT ---
         document.getElementById('zip-btn').onclick = function() {
             const zip = new JSZip();
-            // Simpan state terakhir
             const currentFile = files.find(f => f.id === activeFileId);
             if(currentFile) currentFile.content = mainEditor.getValue();
 
-            files.forEach(file => {
-                zip.file(file.name, file.content);
-            });
-
+            files.forEach(file => { zip.file(file.name, file.content); });
             zip.generateAsync({type:"blob"}).then(function(content) {
                 saveAs(content, "FerCy_Project.zip");
             });
         };
 
-        // --- SCREEN RECORDER (Fitur Baru) ---
-        let mediaRecorder;
-        let recordedChunks = [];
-        const recBtn = document.getElementById('record-btn');
-        const recDot = document.querySelector('.recording-dot');
-        let isRecording = false;
-
-        recBtn.onclick = async () => {
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    
-                    mediaRecorder.ondataavailable = (e) => {
-                        if (e.data.size > 0) recordedChunks.push(e.data);
-                    };
-
-                    mediaRecorder.onstop = () => {
-                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `FerCy_Recording_${Date.now()}.webm`;
-                        a.click();
-                        recordedChunks = [];
-                        stopRecUI();
-                    };
-
-                    mediaRecorder.start();
-                    startRecUI();
-                    
-                    // Handle user clicking "Stop sharing" on browser UI
-                    stream.getVideoTracks()[0].onended = () => {
-                        if(isRecording) recBtn.click();
-                    };
-
-                } catch (err) {
-                    console.error("Error: " + err);
-                }
-            } else {
-                mediaRecorder.stop();
-            }
-        };
-
-        function startRecUI() {
-            isRecording = true;
-            recDot.style.display = 'inline-block';
-            recBtn.querySelector('span').innerText = 'Stop';
-            recBtn.style.borderColor = 'red';
-            recBtn.style.color = 'red';
-        }
-
-        function stopRecUI() {
-            isRecording = false;
-            recDot.style.display = 'none';
-            recBtn.querySelector('span').innerText = 'Rec';
-            recBtn.style.borderColor = 'var(--border)';
-            recBtn.style.color = 'var(--text-dim)';
-        }
-
-        // --- NEW FILE TEMPLATES (Saran No 6) ---
+        // --- NEW FILE TEMPLATES ---
         const modal = document.getElementById('file-modal');
         const addBtn = document.getElementById('add-file-btn');
         const filenameInput = document.getElementById('new-filename');
@@ -704,7 +662,8 @@
         function closeModal() { modal.style.display = 'none'; filenameInput.value = ''; }
 
         const TEMPLATES = {
-            'blank': '<!DOCTYPE html>\n<html>\n<body>\n\n</body>\n</html>',
+            'blank': '',
+            'python': '# Tulis kode Python di sini\nprint("Hello from FerCy Python Engine!")\n',
             'basic': '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>',
             'bootstrap': '<!DOCTYPE html>\n<html>\n<head>\n  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">\n</head>\n<body class="p-5">\n  <div class="alert alert-primary">Hello Bootstrap!</div>\n</body>\n</html>',
             'tailwind': '<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-gray-900 text-white flex items-center justify-center h-screen">\n  <h1 class="text-4xl font-bold">Hello Tailwind!</h1>\n</body>\n</html>'
@@ -718,7 +677,7 @@
             const newFile = { 
                 id: Date.now(), 
                 name: name, 
-                lang: 'htmlmixed', 
+                lang: name.endsWith('.py') ? 'python' : 'htmlmixed', 
                 content: TEMPLATES[tmplKey] || TEMPLATES['blank']
             };
             files.push(newFile);
@@ -727,10 +686,17 @@
             openFile(newFile.id);
         }
 
-        // --- UTILS (Format, Delete, Run, Console) ---
+        // --- UTILS (Format, Delete, Console Helper) ---
         document.getElementById('format-btn').onclick = () => {
             try {
-                const formatted = prettier.format(mainEditor.getValue(), { parser: "html", plugins: prettierPlugins });
+                const currentFile = files.find(f => f.id === activeFileId);
+                let formatted;
+                if(currentFile && currentFile.name.endsWith('.py')) {
+                   alert("Maaf, Format otomatis belum tersedia untuk Python saat ini.");
+                   return;
+                } else {
+                   formatted = prettier.format(mainEditor.getValue(), { parser: "html", plugins: prettierPlugins });
+                }
                 mainEditor.setValue(formatted);
             } catch(e) { alert("Code error, cannot format."); }
         };
@@ -746,41 +712,73 @@
             }
         };
 
-        document.getElementById('run-btn').onclick = () => {
+        // --- RUN LOGIC (UPDATED FOR PYTHON) ---
+        document.getElementById('run-btn').onclick = async () => {
             const activeFile = files.find(f => f.id === activeFileId);
             activeFile.content = mainEditor.getValue();
             saveToStorage();
 
-            const webPreview = document.getElementById('web-preview');
             clearConsole();
 
-            // Intercept Console
-            const scriptInterception = `<script>
-                (function(){
-                    const send = (type, args) => {
-                        const msg = Array.from(args).join(' ');
-                        window.parent.postMessage({source:'fercy', type, message:msg}, '*');
-                    };
-                    console.log = (...a) => send('log', a);
-                    console.warn = (...a) => send('warn', a);
-                    console.error = (...a) => send('error', a);
-                    window.onerror = (m,u,l) => send('error', [m]);
-                })();
-            <\/script>`;
+            // 1. JIKA FILE PYTHON (.py)
+            if (activeFile.name.endsWith('.py')) {
+                if (!pyodideInstance) {
+                    addToConsole('warn', 'Python engine masih dimuat, mohon tunggu...');
+                    return;
+                }
+                
+                document.getElementById('web-preview').srcdoc = "<html><body style='color:#333; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;'>Running Python... Check Console Below.</body></html>";
+                addToConsole('system', 'Running Python Script...');
+                
+                try {
+                    // Redirect Python print() to our HTML console
+                    pyodideInstance.setStdout({ batched: (msg) => {
+                        addToConsole('log', msg);
+                    }});
+                    
+                    await pyodideInstance.runPythonAsync(activeFile.content);
+                    addToConsole('system', 'Execution finished.');
+                } catch (err) {
+                    addToConsole('error', err);
+                }
 
-            const doc = webPreview.contentWindow.document;
-            doc.open();
-            doc.write(scriptInterception + activeFile.content);
-            doc.close();
+            } 
+            // 2. JIKA FILE WEB (HTML/JS)
+            else {
+                const webPreview = document.getElementById('web-preview');
+                const scriptInterception = `<script>
+                    (function(){
+                        const send = (type, args) => {
+                            const msg = Array.from(args).join(' ');
+                            window.parent.postMessage({source:'fercy', type, message:msg}, '*');
+                        };
+                        console.log = (...a) => send('log', a);
+                        console.warn = (...a) => send('warn', a);
+                        console.error = (...a) => send('error', a);
+                        window.onerror = (m,u,l) => send('error', [m]);
+                    })();
+                <\/script>`;
+
+                const doc = webPreview.contentWindow.document;
+                doc.open();
+                doc.write(scriptInterception + activeFile.content);
+                doc.close();
+            }
         };
+
+        // Console Helper
+        function addToConsole(type, message) {
+            const logs = document.getElementById('console-logs');
+            logs.innerHTML += `<div class="log-entry ${type}">[${type.toUpperCase()}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
 
         window.addEventListener('message', (e) => {
             if(e.data && e.data.source === 'fercy') {
-                const logs = document.getElementById('console-logs');
-                logs.innerHTML += `<div class="log-entry ${e.data.type}">[Log] ${e.data.message}</div>`;
-                logs.scrollTop = logs.scrollHeight;
+                addToConsole(e.data.type, e.data.message);
             }
         });
+        
         function clearConsole() { document.getElementById('console-logs').innerHTML = ''; }
 
         let isDarkMode = true;
