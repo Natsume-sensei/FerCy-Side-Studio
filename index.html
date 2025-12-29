@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FerCy Side Studio</title>
+    <title>FerCy Side Studio - Mac Edition</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.css">
     
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
@@ -23,185 +21,198 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://emmet.io/js/emmet.js"></script>
-
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror-emmet@1.0.6/dist/codemirror-emmet.min.js"></script>
 
     <style>
-        /* --- REDESIGN UI: THEME CONFIGURATION --- */
+        /* --- MACOS UI THEME SYSTEM --- */
         :root {
-            --bg-primary: #0f172a;       
-            --bg-secondary: #1e293b;     
-            --bg-tertiary: #334155;      
-            --accent: #0ea5e9;           
-            --accent-hover: #0284c7;
-            --accent-glow: rgba(14, 165, 233, 0.4);
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --border: #334155;
-            --glass: rgba(15, 23, 42, 0.9);
-            --item-hover: rgba(255, 255, 255, 0.08);
-            --splash-bg: #020617;
-            --tab-active-bg: #1e293b;
-            --panel-left-width: 250px;
-            --panel-right-width: 500px;
+            /* macOS Dark Mode Palette */
+            --mac-bg-app: #1e1e1e;          /* Base Window Color */
+            --mac-sidebar: rgba(40, 40, 40, 0.95); /* Sidebar Slightly Translucent */
+            --mac-header: rgba(50, 50, 50, 0.8);   /* Header Glass */
+            --mac-border: #383838;
+            --mac-text-primary: #ffffff;
+            --mac-text-secondary: #a1a1aa;
+            
+            --mac-accent: #0A84FF;          /* macOS System Blue */
+            --mac-selection: rgba(10, 132, 255, 0.2);
+            
+            --traffic-red: #FF5F57;
+            --traffic-yellow: #FEBC2E;
+            --traffic-green: #28C840;
+
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            
+            --radius-app: 10px;
+            --panel-left-width: 240px;
+            --panel-right-width: 450px;
         }
 
         body.light-mode {
-            --bg-primary: #f1f5f9;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #e2e8f0;
-            --accent: #0284c7;
-            --text-main: #0f172a;
-            --text-dim: #64748b;
-            --border: #cbd5e1;
-            --glass: rgba(255, 255, 255, 0.95);
-            --item-hover: rgba(0, 0, 0, 0.05);
-            --splash-bg: #ffffff;
-            --tab-active-bg: #ffffff;
+            --mac-bg-app: #ffffff;
+            --mac-sidebar: #f5f5f7;
+            --mac-header: rgba(255, 255, 255, 0.85);
+            --mac-border: #d1d1d6;
+            --mac-text-primary: #000000;
+            --mac-text-secondary: #5a5a5c;
+            --mac-accent: #007AFF;
+            --mac-selection: rgba(0, 122, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s ease, color 0.2s ease; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.3); border-radius: 5px; border: 3px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb:hover { background-color: rgba(128, 128, 128, 0.5); }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
+            font-family: var(--font-ui);
+            background-color: #000; /* Outer frame black */
+            color: var(--mac-text-primary);
             height: 100vh; 
             display: flex; flex-direction: column; overflow: hidden;
+            font-size: 13px;
         }
 
         /* --- SPLASH SCREEN --- */
         #splash-screen {
-            position: fixed; inset: 0; background-color: var(--splash-bg); z-index: 9999;
+            position: fixed; inset: 0; background-color: #1a1a1a; z-index: 9999;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.5s ease-out, visibility 0.5s;
         }
-        .splash-logo { font-size: 3rem; font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; animation: pulse 2s infinite; }
-        .splash-logo span { color: var(--accent); }
-        .loading-bar { width: 200px; height: 3px; background: rgba(128,128,128,0.2); border-radius: 2px; overflow: hidden; }
-        .loading-progress { width: 0%; height: 100%; background: var(--accent); animation: load 2s ease-in-out forwards; }
-        .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-logo { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #fff; letter-spacing: -0.5px; }
+        .splash-logo span { color: var(--mac-accent); }
+        .loading-bar { width: 180px; height: 4px; background: #333; border-radius: 10px; overflow: hidden; }
+        .loading-progress { width: 0%; height: 100%; background: var(--mac-accent); animation: load 2s ease-in-out forwards; border-radius: 10px; }
+        .splash-hidden { opacity: 0; visibility: hidden; }
         @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
-        @keyframes pulse { 50% { opacity: 0.7; } }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Unified Title Bar Style) --- */
         header {
-            height: 60px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; background: var(--glass); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 100;
+            height: 52px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 18px; 
+            background: var(--mac-header); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--mac-border); flex-shrink: 0; z-index: 100;
         }
         
-        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-left { display: flex; align-items: center; gap: 20px; width: var(--panel-left-width); }
         
-        .toggle-btn {
-            font-size: 1.2rem; color: var(--text-dim); cursor: pointer; padding: 5px;
-            transition: all 0.2s;
+        /* Mac Traffic Lights */
+        .mac-traffic-lights {
+            display: flex; gap: 8px; margin-right: 10px;
         }
-        .toggle-btn:hover, .toggle-btn.active { color: var(--accent); transform: scale(1.1); }
+        .mac-dot { width: 12px; height: 12px; border-radius: 50%; transition: transform 0.1s; }
+        .mac-red { background: var(--traffic-red); border: 0.5px solid #E0443E; }
+        .mac-yellow { background: var(--traffic-yellow); border: 0.5px solid #DEA123; }
+        .mac-green { background: var(--traffic-green); border: 0.5px solid #1AAB29; }
+        .mac-traffic-lights:hover .mac-dot { opacity: 0.8; }
 
-        .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        .logo i { filter: drop-shadow(0 0 5px var(--accent-glow)); }
-        .logo span { color: var(--accent); }
+        .toggle-btn { color: var(--mac-text-secondary); cursor: pointer; font-size: 14px; }
+        .toggle-btn:hover { color: var(--mac-text-primary); }
+
+        .app-title {
+            font-weight: 600; font-size: 13px; color: var(--mac-text-secondary); 
+            position: absolute; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 8px;
+        }
         
         .controls { display: flex; gap: 8px; align-items: center; }
 
         .btn {
-            background: transparent; border: 1px solid var(--border); color: var(--text-dim);
-            height: 36px; padding: 0 12px; border-radius: 8px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; position: relative;
-            font-size: 0.9rem; transition: all 0.2s;
+            background: transparent; border: none; color: var(--mac-text-primary);
+            height: 28px; padding: 0 10px; border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; transition: background 0.2s; font-family: var(--font-ui);
         }
-        .btn:hover { background: var(--item-hover); border-color: var(--text-dim); color: var(--text-main); }
-        .btn-text { width: auto; padding: 0 15px; gap: 8px; font-weight: 500; }
+        .btn:hover { background: rgba(128,128,128, 0.2); }
+        .btn i { font-size: 14px; }
+        .btn-text span { margin-left: 6px; font-weight: 500; font-size: 12px; }
         
-        /* Run Button Style */
-        .btn-run { 
-            background: linear-gradient(135deg, var(--accent), #2563eb); 
-            color: white; border: none; font-weight: 700;
-            box-shadow: 0 0 15px var(--accent-glow);
+        /* Mac Button Style */
+        .btn-run {
+            background: transparent; color: var(--mac-accent);
         }
-        .btn-run:hover { 
-            background: linear-gradient(135deg, #2563eb, var(--accent));
-            box-shadow: 0 0 20px var(--accent-glow); opacity: 1; color: white;
-        }
-        
+        .btn-run:hover { background: var(--mac-selection); }
+        .btn-run i { margin-right: 4px; }
+
         .recording-dot {
-            width: 10px; height: 10px; background: red; border-radius: 50%;
-            display: none; animation: blink-rec 1s infinite; margin-right: 5px;
+            width: 8px; height: 8px; background: var(--traffic-red); border-radius: 50%;
+            display: none; animation: blink-rec 1s infinite; margin-right: 6px;
         }
         @keyframes blink-rec { 50% { opacity: 0; } }
 
         /* --- WORKSPACE LAYOUT --- */
-        .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .workspace { display: flex; flex: 1; overflow: hidden; background: var(--mac-bg-app); }
         
-        /* Sidebar */
+        /* Sidebar (Finder Style) */
         .sidebar {
             width: var(--panel-left-width); 
-            background: var(--bg-primary); 
-            border-right: 1px solid var(--border);
+            background: var(--mac-sidebar); 
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--mac-border);
             display: flex; flex-direction: column; flex-shrink: 0;
-            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden; white-space: nowrap;
+            transition: width 0.3s ease;
+            padding-top: 10px;
         }
-        .sidebar.collapsed { width: 0; border-right: none; }
+        .sidebar.collapsed { width: 0; border-right: none; padding: 0; }
 
         .sidebar-header {
-            padding: 15px 20px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); flex-shrink: 0; font-weight: 700;
-        }
-        .file-list { list-style: none; padding: 10px; overflow-y: auto; flex: 1; }
-        .file-item {
-            padding: 10px 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
-            cursor: pointer; border-radius: 6px; font-size: 0.9rem; color: var(--text-dim);
-            border: 1px solid transparent;
-        }
-        .file-item:hover { background: var(--item-hover); color: var(--text-main); }
-        .file-item.active { 
-            background: rgba(14, 165, 233, 0.15); 
-            color: var(--accent); 
-            border-color: rgba(14, 165, 233, 0.3);
+            padding: 0 16px 10px 16px; font-size: 11px; font-weight: 600; 
+            color: var(--mac-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
         }
         
-        .file-icon { width: 15px; text-align: center; }
-        .file-actions { margin-left: auto; display: none; gap: 5px; }
-        .file-item:hover .file-actions { display: flex; }
-        .delete-btn { color: var(--danger); font-size: 0.8rem; padding: 2px; }
+        .file-list { list-style: none; padding: 0 10px; overflow-y: auto; flex: 1; }
+        .file-item {
+            padding: 6px 10px; display: flex; align-items: center; gap: 10px; margin-bottom: 2px;
+            cursor: default; border-radius: 6px; font-size: 13px; color: var(--mac-text-primary);
+        }
+        /* Active State like Finder */
+        .file-item.active { 
+            background: var(--mac-accent); 
+            color: white; 
+        }
+        .file-item:not(.active):hover { background: rgba(128,128,128, 0.15); }
+        
+        .file-icon { width: 16px; text-align: center; }
+        .file-actions { margin-left: auto; display: none; }
+        .file-item:hover .file-actions { display: block; }
+        .delete-btn { color: inherit; opacity: 0.7; font-size: 12px; }
+        .delete-btn:hover { opacity: 1; }
 
         /* --- MAIN AREA --- */
-        .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
+        .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
         
         .tab-bar {
-            height: 40px; background: var(--bg-primary); display: flex; align-items: flex-end;
-            padding-left: 0; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
+            height: 38px; background: var(--mac-bg-app); display: flex; align-items: center;
+            padding-left: 10px; border-bottom: 1px solid var(--mac-border); overflow-x: auto;
         }
         .tab {
-            height: 100%; padding: 0 20px; display: flex; align-items: center; gap: 8px;
-            font-size: 0.85rem; color: var(--text-dim); border-right: 1px solid var(--border);
-            cursor: pointer; background: var(--bg-primary); position: relative; user-select: none;
-            min-width: 140px; border-top: 2px solid transparent;
+            padding: 4px 12px; display: flex; align-items: center; gap: 8px; margin-right: 4px;
+            font-size: 12px; color: var(--mac-text-secondary); border-radius: 6px;
+            cursor: pointer; user-select: none; transition: all 0.2s;
         }
-        .tab.active { background: var(--bg-secondary); color: var(--text-main); border-top: 2px solid var(--accent); }
-        .tab-close { margin-left: auto; font-size: 0.7rem; opacity: 0; border-radius: 50%; padding: 4px; }
-        .tab:hover .tab-close { opacity: 1; }
-        .tab-close:hover { background: var(--danger); color: white; }
+        .tab:hover { background: rgba(128,128,128, 0.1); color: var(--mac-text-primary); }
+        .tab.active { 
+            background: rgba(128,128,128, 0.2); 
+            color: var(--mac-text-primary); 
+            font-weight: 500;
+        }
+        .tab-close { margin-left: 6px; font-size: 10px; opacity: 0; border-radius: 50%; padding: 2px; }
+        .tab:hover .tab-close { opacity: 0.6; }
+        .tab-close:hover { background: rgba(0,0,0,0.2); opacity: 1; }
 
-        /* EDITOR CONTAINER */
-        .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; background: var(--bg-primary); }
+        /* Editor Wrapper */
+        .editor-wrapper { flex: 1; position: relative; display: flex; overflow: hidden; }
         .editor-container { flex: 1; position: relative; overflow: hidden; }
         
         .minimap-container {
-            width: 80px; background: var(--bg-primary); border-left: 1px solid var(--border);
-            position: relative; overflow: hidden; user-select: none; cursor: default;
-            flex-shrink: 0; display: none; 
+            width: 60px; border-left: 1px solid var(--mac-border);
+            position: relative; overflow: hidden; opacity: 0.6;
+            display: none; background: var(--mac-bg-app);
         }
         @media (min-width: 768px) { .minimap-container { display: block; } }
         .minimap-content {
@@ -209,184 +220,180 @@
             width: 666%; height: 100%; pointer-events: none;
         }
 
-        .CodeMirror { height: 100% !important; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: transparent !important; }
-        
-        .CodeMirror-dialog {
-            background: var(--bg-secondary) !important; color: var(--text-main) !important;
-            border-bottom: 1px solid var(--border); padding: 5px 10px !important;
+        /* CodeMirror Customization for Mac Look */
+        .CodeMirror { 
+            font-family: 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace; 
+            font-size: 13px; line-height: 1.6;
+            background: transparent !important; 
         }
-        .CodeMirror-dialog input {
-            background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-main);
-            outline: none; border-radius: 4px; padding: 2px 5px;
-        }
+        .cm-s-dracula.CodeMirror { background: var(--mac-bg-app) !important; color: var(--mac-text-primary) !important; }
+        .CodeMirror-gutters { background: var(--mac-bg-app) !important; border-right: 1px solid var(--mac-border) !important; }
+        .CodeMirror-linenumber { color: var(--mac-text-secondary) !important; }
 
-        /* --- PREVIEW & CONSOLE AREA --- */
+        /* --- PREVIEW & CONSOLE --- */
         .preview-container {
             width: var(--panel-right-width); 
-            border-left: 1px solid var(--border); display: flex; flex-direction: column;
-            background: var(--bg-secondary); overflow: hidden; flex-shrink: 0;
-            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-left: 1px solid var(--mac-border); display: flex; flex-direction: column;
+            background: var(--mac-bg-app); overflow: hidden; flex-shrink: 0;
+            transition: width 0.3s ease;
         }
         .preview-container.collapsed { width: 0; border-left: none; }
 
         .preview-header {
-            padding: 10px 15px; background: var(--bg-primary); color: var(--text-dim);
-            font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border); flex-shrink: 0; font-weight: bold;
+            padding: 0 12px; height: 38px; background: var(--mac-bg-app); color: var(--mac-text-secondary);
+            font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--mac-border); letter-spacing: 0.5px;
         }
-        .preview-header span i { margin-right: 5px; }
 
         iframe { flex: 1; border: none; width: 100%; background: #fff; }
         
-        /* CONSOLE */
+        /* Mac Terminal Style Console */
         .console-panel {
-            height: 180px; background: #0b1120; border-top: 1px solid var(--border);
-            display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+            height: 180px; background: #121212; border-top: 1px solid var(--mac-border);
+            display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace;
         }
         .console-header {
-            padding: 8px 15px; background: #1e293b; color: var(--text-dim); font-size: 0.75rem;
-            display: flex; justify-content: space-between; border-bottom: 1px solid var(--border);
+            padding: 6px 12px; background: #1c1c1c; color: #888; font-size: 11px;
+            display: flex; justify-content: space-between; border-bottom: 1px solid #333;
         }
-        .console-body { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.85rem; color: #eee; }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 2px; }
-        .log-entry.error { color: #ff6b6b; }
-        .log-entry.warn { color: #feca57; }
-        .log-entry.log { color: #2ecc71; }
-        .log-entry.system { color: #0ea5e9; font-weight: bold; }
-        .log-time { color: #64748b; font-size: 0.7rem; margin-right: 8px; }
+        .console-body { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; color: #eee; }
+        .log-entry { margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+        .log-entry.error { color: var(--traffic-red); }
+        .log-entry.warn { color: var(--traffic-yellow); }
+        .log-entry.log { color: #dcdcdc; }
+        .log-entry.system { color: var(--mac-accent); }
+        .log-time { color: #555; font-size: 10px; margin-right: 8px; }
 
         /* Footer */
         footer {
-            height: 30px; background: var(--bg-primary); border-top: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
-            font-size: 0.75rem; color: var(--text-dim); z-index: 50; flex-shrink: 0;
+            height: 28px; background: var(--mac-bg-app); border-top: 1px solid var(--mac-border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
+            font-size: 11px; color: var(--mac-text-secondary);
         }
 
-        /* ZEN MODE */
+        /* --- MODAL (Mac Sheet Style) --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+            z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding-top: 100px;
+        }
+        .modal {
+            background: var(--mac-bg-app); padding: 20px; border-radius: 12px; width: 380px;
+            border: 1px solid var(--mac-border); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal h3 { margin-bottom: 15px; font-size: 16px; color: var(--mac-text-primary); font-weight: 600; text-align: center; }
+        .modal input, .modal select {
+            width: 100%; padding: 8px 10px; margin-bottom: 15px; background: rgba(128,128,128,0.1);
+            border: 1px solid transparent; color: var(--mac-text-primary); border-radius: 6px; font-size: 13px;
+        }
+        .modal input:focus, .modal select:focus { border-color: var(--mac-accent); background: rgba(128,128,128,0.05); }
+        
+        .modal-btns { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .modal-btns .btn { width: 100px; background: rgba(128,128,128,0.2); }
+        .modal-btns .btn-run { background: var(--mac-accent); color: white; }
+        .modal-btns .btn-run:hover { background: #006add; }
+
+        /* Zen Mode Button */
+        #exit-zen-btn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10000;
+            background: rgba(50,50,50,0.8); backdrop-filter: blur(10px); color: white; padding: 10px 24px;
+            border-radius: 20px; border: 1px solid #555; font-size: 13px; cursor: pointer; display: none;
+        }
         body.zen-mode header, body.zen-mode footer, body.zen-mode .sidebar, body.zen-mode .tab-bar, body.zen-mode .console-panel { display: none !important; }
-        body.zen-mode .workspace { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
+        body.zen-mode .workspace { position: fixed; inset: 0; z-index: 9999; }
         body.zen-mode .preview-container { width: 50%; }
         body.zen-mode .preview-container.collapsed { width: 0; } 
         body.zen-mode #exit-zen-btn { display: block; }
-        
-        #exit-zen-btn {
-            position: fixed; bottom: 20px; right: 20px; z-index: 10000;
-            background: var(--accent); color: white; padding: 10px 20px;
-            border-radius: 30px; border: none; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 20px var(--accent-glow); display: none;
-        }
 
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            z-index: 1000; display: none; align-items: center; justify-content: center;
-        }
-        .modal {
-            background: var(--bg-secondary); padding: 25px; border-radius: 12px; width: 400px;
-            border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .modal h3 { margin-bottom: 20px; font-size: 1.2rem; color: var(--accent); }
-        .modal input, .modal select {
-            width: 100%; padding: 10px; margin-bottom: 15px; background: var(--bg-primary);
-            border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; outline: none;
-        }
-        .modal input:focus, .modal select:focus { border-color: var(--accent); }
-        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
-
+        /* Responsive */
         @media (max-width: 768px) {
             .workspace { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-            .preview-container { width: 100%; height: 350px; border-left: none; border-top: 1px solid var(--border); }
+            .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--mac-border); }
+            .preview-container { width: 100%; height: 350px; border-left: none; border-top: 1px solid var(--mac-border); }
             .btn-text span { display: none; }
-            .btn-text { width: 35px; padding: 0; }
-            .minimap-container { display: none; }
-            .toggle-btn { display: none; }
+            .app-title { display: none; }
         }
     </style>
 </head>
 <body>
 
     <div id="splash-screen">
-        <div class="splash-logo"><i class="fas fa-layer-group"></i> FerCy <span>Side Studio</span></div>
+        <div class="splash-logo"><i class="fas fa-layer-group" style="font-size: 2rem;"></i> FerCy Side<span>Studio</span></div>
         <div class="loading-bar"><div class="loading-progress"></div></div>
-        <div style="margin-top: 10px; color: var(--text-dim); font-size: 0.8rem;">Memuat Python Engine...</div>
+        <div style="margin-top: 15px; color: #666; font-size: 0.8rem; font-family: -apple-system, sans-serif;">Initializing Environment...</div>
     </div>
 
-    <button id="exit-zen-btn" onclick="toggleZenMode()"><i class="fas fa-expand-arrows-alt"></i> Exit Zen Mode</button>
+    <button id="exit-zen-btn" onclick="toggleZenMode()">Exit Full Screen</button>
 
     <div class="modal-overlay" id="file-modal">
         <div class="modal">
-            <h3>Buat File Baru</h3>
-            <label style="font-size:0.8rem; color:var(--text-dim)">Nama File:</label>
-            <input type="text" id="new-filename" placeholder="contoh: script.py atau index.html">
-            
-            <label style="font-size:0.8rem; color:var(--text-dim)">Template Starter:</label>
+            <h3>New File</h3>
+            <input type="text" id="new-filename" placeholder="Filename (e.g. script.py)">
             <select id="template-select">
-                <option value="blank">Kosong (Blank)</option>
-                <option value="python">Python Basic 🐍</option>
-                <option value="bootstrap">Bootstrap 5 CDN</option>
-                <option value="tailwind">Tailwind CSS CDN</option>
+                <option value="blank">Blank File</option>
+                <option value="python">Python Script 🐍</option>
                 <option value="basic">HTML5 Boilerplate</option>
+                <option value="tailwind">Tailwind CSS</option>
             </select>
-
             <div class="modal-btns">
-                <button class="btn" onclick="closeModal()">Batal</button>
-                <button class="btn btn-run" onclick="confirmNewFile()" style="width: auto; padding: 0 15px;">Buat</button>
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-run" onclick="confirmNewFile()">Create</button>
             </div>
         </div>
     </div>
 
     <header>
         <div class="header-left">
-            <i class="fas fa-bars toggle-btn" id="toggle-left-btn" title="Toggle Explorer"></i>
-            
-            <div class="logo">
-                <i class="fas fa-layer-group" style="color: var(--accent);"></i>
-                FerCy <span>Side</span>
+            <div class="mac-traffic-lights">
+                <div class="mac-dot mac-red"></div>
+                <div class="mac-dot mac-yellow"></div>
+                <div class="mac-dot mac-green" onclick="toggleZenMode()"></div>
             </div>
+            
+            <i class="fas fa-sidebar toggle-btn" id="toggle-left-btn" title="Toggle Sidebar" style="margin-left: 15px;"></i>
+            <i class="fas fa-columns toggle-btn" id="toggle-right-btn" title="Toggle Preview"></i>
+        </div>
+
+        <div class="app-title">
+            <i class="fas fa-code"></i> FerCy Side Studio
         </div>
         
         <div class="controls">
-            <button class="btn btn-text" id="record-btn" title="Rekam Layar Coding">
+            <button class="btn btn-text" id="add-file-btn" title="New File">
+                <i class="fas fa-plus"></i>
+            </button>
+            
+            <button class="btn" id="zip-btn" title="Export">
+                <i class="fas fa-arrow-up-from-bracket"></i>
+            </button>
+            
+            <button class="btn" id="format-btn" title="Format">
+                <i class="fas fa-align-left"></i>
+            </button>
+
+            <button class="btn" id="record-btn" title="Record">
                 <div class="recording-dot"></div>
-                <i class="fas fa-video"></i> <span>Rec</span>
+                <i class="fas fa-video"></i>
             </button>
 
-            <button class="btn" id="zen-btn" title="Zen Mode (Focus)" onclick="toggleZenMode()">
-                <i class="fas fa-expand"></i>
+            <button class="btn" id="theme-btn" title="Theme">
+                <i class="fas fa-circle-half-stroke"></i>
             </button>
 
-            <button class="btn btn-text" id="zip-btn" title="Export Project to ZIP">
-                <i class="fas fa-file-archive"></i> <span>ZIP</span>
-            </button>
+            <div style="width: 1px; height: 16px; background: var(--mac-border); margin: 0 4px;"></div>
 
-            <div style="width: 1px; height: 20px; background: var(--border); margin: 0 5px;"></div>
-
-            <button class="btn btn-text" id="format-btn" title="Format Code">
-                <i class="fas fa-broom"></i> <span>Format</span>
-            </button>
-            
-            <button class="btn btn-text" id="add-file-btn" title="Tambah File Baru">
-                <i class="fas fa-plus"></i> <span>Baru</span>
-            </button>
-            
-            <button class="btn" id="theme-btn" title="Ganti Tema"><i class="fas fa-moon"></i></button>
-            
             <button class="btn btn-run btn-text" id="run-btn">
-                <i class="fas fa-play"></i> <span>RUN</span>
+                <i class="fas fa-play"></i> <span>Run</span>
             </button>
-            
-            <i class="fas fa-columns toggle-btn" id="toggle-right-btn" title="Toggle Preview" style="margin-left: 10px;"></i>
         </div>
     </header>
 
     <div class="workspace">
         
         <aside class="sidebar" id="sidebar-panel">
-            <div class="sidebar-header">
-                <span>Explorer</span>
-                <i class="fas fa-folder-open"></i>
-            </div>
+            <div class="sidebar-header">Explorer</div>
             <ul class="file-list" id="file-list-container"></ul>
         </aside>
 
@@ -405,18 +412,18 @@
 
         <div class="preview-container" id="preview-panel">
             <div class="preview-header">
-                <span id="output-label"><i class="fas fa-globe"></i> Web Browser Preview</span>
-                <i class="fas fa-sync-alt" onclick="document.getElementById('run-btn').click()" style="cursor: pointer;" title="Refresh"></i>
+                <span id="output-label">Preview</span>
+                <i class="fas fa-rotate-right" onclick="document.getElementById('run-btn').click()" style="cursor: pointer; font-size: 12px;"></i>
             </div>
             <iframe id="web-preview"></iframe>
             
             <div class="console-panel" id="custom-console">
                 <div class="console-header">
-                    <span><i class="fas fa-terminal"></i> Console Output</span>
-                    <i class="fas fa-trash" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
+                    <span>Terminal</span>
+                    <i class="fas fa-ban" style="cursor: pointer;" title="Clear" onclick="clearConsole()"></i>
                 </div>
                 <div class="console-body" id="console-logs">
-                    <div class="log-entry system"><span class="log-time">System</span> Initializing Environment...</div>
+                    <div class="log-entry system"><span class="log-time">SYS</span> Ready.</div>
                 </div>
             </div>
         </div>
@@ -424,10 +431,10 @@
 
     <footer>
         <div class="left" id="status-bar" style="display: flex; gap: 15px;">
-            <span><i class="fas fa-code-branch"></i> main</span>
+            <span><i class="fas fa-code-branch" style="margin-right:5px"></i>main</span>
             <span id="status-text">Ready</span>
         </div>
-        <div class="right" id="python-status"><i class="fas fa-circle-notch fa-spin"></i> Loading Python...</div>
+        <div class="right" id="python-status">Initializing Python...</div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
@@ -448,47 +455,84 @@
     <script src="https://cdn.jsdelivr.net/npm/codemirror-emmet@1.0.6/dist/codemirror-emmet.min.js"></script>
 
     <script>
-        const STORAGE_KEY = 'fercy_v3_ultimate';
-        
+        // --- KONFIGURASI ---
+        const STORAGE_KEY = 'fercy_mac_edition_v3_fixed';
+        const SPLASH_TIMEOUT_MS = 2500; // Paksa masuk UI setelah 2.5 detik apapun yang terjadi
+
+        // --- DATA DEFAULT ---
         let savedData = localStorage.getItem(STORAGE_KEY);
-        // Default file ada Python juga
         let files = savedData ? JSON.parse(savedData) : [
             { 
                 id: 1, name: 'index.html', lang: 'htmlmixed', 
-                content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #0f172a; color: #0ea5e9; font-family: sans-serif; text-align: center; padding-top: 50px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy Side Studio</h1>\n  <p>Coba fitur Emmet: ketik div.box>ul>li*3 lalu tekan TAB!</p>\n  <script>\n    console.log("Console is active!");\n  <\/script>\n</body>\n</html>' 
+                content: '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #fff; color: #333; font-family: -apple-system, sans-serif; text-align: center; padding-top: 50px; }\n    h1 { font-weight: 800; letter-spacing: -1px; }\n  </style>\n</head>\n<body>\n  <h1>FerCy Side Studio</h1>\n  <p>Running on Live Server Success!</p>\n  <script>\n    console.log("System Ready.");\n  <\/script>\n</body>\n</html>' 
             },
             {
                 id: 2, name: 'main.py', lang: 'python',
-                content: '# Contoh Kode Python di FerCy\n\ndef sapa_fercy(nama):\n    return f"Halo {nama}, selamat datang di FerCy OS Environment!"\n\nprint(sapa_fercy("User"))\n\n# Loop sederhana\nfor i in range(1, 6):\n    print(f"Looping ke-{i}")'
+                content: '# Python Script\n\ndef greeting(name):\n    return f"Hello {name}, running on WebAssembly!"\n\nprint(greeting("Developer"))\n\nfor i in range(3):\n    print(f"Processing data... {i+1}")'
             }
         ];
         
         let activeFileId = files[0].id;
         let openFiles = [files[0].id];
-        let mainEditor, minimapEditor; // Editor Instances
-        let pyodideInstance = null; // Variable untuk menyimpan engine Python
+        let mainEditor, minimapEditor; 
+        let pyodideInstance = null; 
 
-        // --- INIT PYODIDE ENGINE (BARU) ---
-        async function initPyodide() {
-            try {
-                pyodideInstance = await loadPyodide();
-                document.getElementById('python-status').innerHTML = '<i class="fas fa-check-circle" style="color:#22c55e"></i> Python Ready';
-                addToConsole('system', 'Python Engine (Pyodide) berhasil dimuat!');
-                // Hide splash after python loads (or 1.5s whichever later)
-            } catch (err) {
-                document.getElementById('python-status').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red"></i> Python Error';
-                addToConsole('error', 'Gagal memuat Pyodide: ' + err);
+        // --- FUNGSI HIDE SPLASH SCREEN (SAFETY) ---
+        function forceHideSplash() {
+            const splash = document.getElementById('splash-screen');
+            if (splash && !splash.classList.contains('splash-hidden')) {
+                splash.classList.add('splash-hidden');
             }
         }
 
-        // --- INIT EDITORS (Main + Minimap) ---
+        // --- INIT PYODIDE ENGINE ---
+        async function initPyodide() {
+            try {
+                // Update UI status
+                addToConsole('system', 'Initializing Python Kernel...');
+                
+                // Cek protocol file://
+                if (window.location.protocol === 'file:') {
+                    addToConsole('warn', '⚠️ Running on file:// protocol. Python might be blocked.');
+                    document.getElementById('python-status').innerHTML = '<i class="fas fa-exclamation-circle" style="color:orange"></i> Restricted';
+                }
+
+                // Load Pyodide
+                pyodideInstance = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
+                });
+                
+                await pyodideInstance.loadPackage("micropip");
+
+                // Sukses
+                document.getElementById('python-status').innerHTML = '<i class="fas fa-check-circle" style="color: #28C840"></i> Python Ready';
+                addToConsole('system', 'Python Engine Loaded Successfully.');
+                
+            } catch (err) {
+                document.getElementById('python-status').innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #FF5F57"></i> Error';
+                addToConsole('error', 'Gagal memuat Pyodide (Network/CORS Error): ' + err.message);
+                console.error(err);
+            } finally {
+                // Pastikan splash screen tertutup setelah proses init selesai (sukses/gagal)
+                forceHideSplash();
+            }
+        }
+
+        // --- INIT SYSTEM (MAIN ENTRY POINT) ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Load Python Async
+            
+            // 1. SAFETY NET: Paksa splash screen hilang setelah timeout (misal koneksi lambat)
+            setTimeout(forceHideSplash, SPLASH_TIMEOUT_MS);
+
+            // 2. Load Editor UI
+            initEditors();
+
+            // 3. Load Python di background
             initPyodide();
+        });
 
-            setTimeout(() => { document.getElementById('splash-screen').classList.add('splash-hidden'); }, 1500);
-
-            // 1. Main Editor Setup
+        function initEditors() {
+            // Main Editor Setup
             mainEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
                 lineNumbers: true,
                 theme: 'dracula',
@@ -505,7 +549,7 @@
                 emmet: { preview: true }
             });
 
-            // 2. Minimap Editor Setup
+            // Minimap Editor Setup
             minimapEditor = CodeMirror(document.getElementById('minimap-content'), {
                 value: mainEditor.getValue(),
                 mode: 'htmlmixed',
@@ -536,7 +580,7 @@
             renderFileList();
             renderTabs();
             switchFile(activeFileId);
-        });
+        }
 
         // --- SLIDING PANEL LOGIC ---
         const sidebarPanel = document.getElementById('sidebar-panel');
@@ -546,24 +590,22 @@
 
         toggleLeftBtn.addEventListener('click', () => {
             sidebarPanel.classList.toggle('collapsed');
-            toggleLeftBtn.classList.toggle('active');
-            setTimeout(() => mainEditor.refresh(), 450);
+            setTimeout(() => mainEditor.refresh(), 350);
         });
 
         toggleRightBtn.addEventListener('click', () => {
             previewPanel.classList.toggle('collapsed');
-            toggleRightBtn.classList.toggle('active');
-            setTimeout(() => mainEditor.refresh(), 450);
+            setTimeout(() => mainEditor.refresh(), 350);
         });
 
         function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
 
         // --- FILE & TABS SYSTEM ---
         function getIconForFile(filename) {
-            if(filename.endsWith('.py')) return '<i class="fab fa-python" style="color:#facc15"></i>';
-            if(filename.endsWith('.css')) return '<i class="fab fa-css3" style="color:#3b82f6"></i>';
-            if(filename.endsWith('.js')) return '<i class="fab fa-js" style="color:#f7df1e"></i>';
-            return '<i class="fab fa-html5" style="color:#e34c26"></i>';
+            if(filename.endsWith('.py')) return '<i class="fab fa-python" style="color:#FFD43B"></i>';
+            if(filename.endsWith('.css')) return '<i class="fab fa-css3" style="color:#0A84FF"></i>';
+            if(filename.endsWith('.js')) return '<i class="fab fa-js" style="color:#FFD60A"></i>';
+            return '<i class="fab fa-html5" style="color:#FF3B30"></i>';
         }
 
         function renderFileList() {
@@ -574,7 +616,7 @@
                 li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
                 li.onclick = () => openFile(file.id);
                 li.innerHTML = `<div class="file-icon">${getIconForFile(file.name)}</div><span>${file.name}</span>
-                    <div class="file-actions"><i class="fas fa-trash delete-btn" onclick="deleteFile(event, ${file.id})"></i></div>`;
+                    <div class="file-actions"><i class="fas fa-xmark delete-btn" onclick="deleteFile(event, ${file.id})"></i></div>`;
                 container.appendChild(li);
             });
         }
@@ -600,7 +642,6 @@
         }
 
         function switchFile(id) {
-            // Save prev
             const currentFile = files.find(f => f.id === activeFileId);
             if(currentFile && mainEditor) currentFile.content = mainEditor.getValue();
 
@@ -611,15 +652,14 @@
                 minimapEditor.setValue(nextFile.content);
                 document.getElementById('status-text').innerText = `Editing: ${nextFile.name}`;
 
-                // --- LOGIKA GANTI MODE EDITOR (PYTHON VS HTML) ---
                 if (nextFile.name.endsWith('.py')) {
                     mainEditor.setOption("mode", "python");
                     minimapEditor.setOption("mode", "python");
-                    document.getElementById('output-label').innerHTML = '<i class="fab fa-python"></i> Python Console Output';
+                    document.getElementById('output-label').innerHTML = 'Terminal Output';
                 } else {
                     mainEditor.setOption("mode", "htmlmixed");
                     minimapEditor.setOption("mode", "htmlmixed");
-                    document.getElementById('output-label').innerHTML = '<i class="fas fa-globe"></i> Web Browser Preview';
+                    document.getElementById('output-label').innerHTML = 'Web Preview';
                 }
             }
             renderFileList();
@@ -634,13 +674,11 @@
             else renderTabs();
         }
 
-        // --- ZEN MODE ---
         function toggleZenMode() {
             document.body.classList.toggle('zen-mode');
             mainEditor.refresh();
         }
 
-        // --- ZIP EXPORT ---
         document.getElementById('zip-btn').onclick = function() {
             const zip = new JSZip();
             const currentFile = files.find(f => f.id === activeFileId);
@@ -648,31 +686,29 @@
 
             files.forEach(file => { zip.file(file.name, file.content); });
             zip.generateAsync({type:"blob"}).then(function(content) {
-                saveAs(content, "FerCy_Project.zip");
+                saveAs(content, "FerCy_Mac_Project.zip");
             });
         };
 
-        // --- NEW FILE TEMPLATES ---
         const modal = document.getElementById('file-modal');
         const addBtn = document.getElementById('add-file-btn');
         const filenameInput = document.getElementById('new-filename');
         const templateSelect = document.getElementById('template-select');
 
-        addBtn.onclick = () => { modal.style.display = 'flex'; filenameInput.focus(); }
+        addBtn.onclick = () => { modal.style.display = 'block'; filenameInput.focus(); }
         function closeModal() { modal.style.display = 'none'; filenameInput.value = ''; }
 
         const TEMPLATES = {
             'blank': '',
-            'python': '# Tulis kode Python di sini\nprint("Hello from FerCy Python Engine!")\n',
+            'python': '# Python Script\nprint("Hello from macOS Web Environment")\n',
             'basic': '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Document</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>',
-            'bootstrap': '<!DOCTYPE html>\n<html>\n<head>\n  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">\n</head>\n<body class="p-5">\n  <div class="alert alert-primary">Hello Bootstrap!</div>\n</body>\n</html>',
-            'tailwind': '<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-gray-900 text-white flex items-center justify-center h-screen">\n  <h1 class="text-4xl font-bold">Hello Tailwind!</h1>\n</body>\n</html>'
+            'tailwind': '<!DOCTYPE html>\n<html>\n<head>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-gray-100 flex items-center justify-center h-screen">\n  <h1 class="text-3xl font-bold text-blue-600">Hello Tailwind!</h1>\n</body>\n</html>'
         };
 
         function confirmNewFile() {
             const name = filenameInput.value.trim();
             const tmplKey = templateSelect.value;
-            if(!name) return alert("Nama file tidak boleh kosong!");
+            if(!name) return alert("Filename cannot be empty.");
             
             const newFile = { 
                 id: Date.now(), 
@@ -686,13 +722,12 @@
             openFile(newFile.id);
         }
 
-        // --- UTILS (Format, Delete, Console Helper) ---
         document.getElementById('format-btn').onclick = () => {
             try {
                 const currentFile = files.find(f => f.id === activeFileId);
                 let formatted;
                 if(currentFile && currentFile.name.endsWith('.py')) {
-                   alert("Maaf, Format otomatis belum tersedia untuk Python saat ini.");
+                   alert("Python formatting not supported yet.");
                    return;
                 } else {
                    formatted = prettier.format(mainEditor.getValue(), { parser: "html", plugins: prettierPlugins });
@@ -703,8 +738,8 @@
 
         window.deleteFile = function(e, id) {
             e.stopPropagation(); 
-            if(files.length <= 1) return alert("Minimal 1 file!");
-            if(confirm('Hapus file?')) {
+            if(files.length <= 1) return alert("Keep at least one file.");
+            if(confirm('Delete file?')) {
                 files = files.filter(f => f.id !== id);
                 closeTab(e, id);
                 renderFileList();
@@ -712,7 +747,7 @@
             }
         };
 
-        // --- RUN LOGIC (UPDATED FOR PYTHON) ---
+        // --- RUN LOGIC ---
         document.getElementById('run-btn').onclick = async () => {
             const activeFile = files.find(f => f.id === activeFileId);
             activeFile.content = mainEditor.getValue();
@@ -720,31 +755,31 @@
 
             clearConsole();
 
-            // 1. JIKA FILE PYTHON (.py)
             if (activeFile.name.endsWith('.py')) {
+                // Check if Python engine is actually ready
                 if (!pyodideInstance) {
-                    addToConsole('warn', 'Python engine masih dimuat, mohon tunggu...');
+                    addToConsole('warn', '⏳ Python Engine is still initializing or failed to load.');
+                    addToConsole('system', 'Attempting to re-initialize...');
+                    // Retry init if user clicks run
+                    initPyodide();
                     return;
                 }
                 
-                document.getElementById('web-preview').srcdoc = "<html><body style='color:#333; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;'>Running Python... Check Console Below.</body></html>";
-                addToConsole('system', 'Running Python Script...');
+                document.getElementById('web-preview').srcdoc = "<html><body style='color:#666; font-family:-apple-system, sans-serif; display:flex; justify-content:center; align-items:center; height:100vh;'>Running Python...</body></html>";
+                addToConsole('system', 'Running Script...');
                 
                 try {
-                    // Redirect Python print() to our HTML console
                     pyodideInstance.setStdout({ batched: (msg) => {
                         addToConsole('log', msg);
                     }});
                     
                     await pyodideInstance.runPythonAsync(activeFile.content);
-                    addToConsole('system', 'Execution finished.');
+                    addToConsole('system', 'Finished.');
                 } catch (err) {
-                    addToConsole('error', err);
+                    addToConsole('error', 'Runtime Error: ' + err);
                 }
 
-            } 
-            // 2. JIKA FILE WEB (HTML/JS)
-            else {
+            } else {
                 const webPreview = document.getElementById('web-preview');
                 const scriptInterception = `<script>
                     (function(){
@@ -766,10 +801,10 @@
             }
         };
 
-        // Console Helper
         function addToConsole(type, message) {
             const logs = document.getElementById('console-logs');
-            logs.innerHTML += `<div class="log-entry ${type}">[${type.toUpperCase()}] ${message}</div>`;
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute:'2-digit' });
+            logs.innerHTML += `<div class="log-entry ${type}"><span class="log-time">${time}</span> ${message}</div>`;
             logs.scrollTop = logs.scrollHeight;
         }
 
@@ -793,4 +828,3 @@
     </script>
 </body>
 </html>
-
